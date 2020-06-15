@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper namespace="com.xxbb.demo.mapper.UserMapper">
+
+    <select id="getUser" resultType="com.xxbb.demo.domain.User">
+        select * from t_user where id = #{id}
+    </select>
+
+    <select id="getAll" resultType="com.xxbb.demo.domain.User">
+        select * from t_user
+    </select>
+    <insert id="insertUser">
+        insert into t_user(id,username,password,if_freeze) values(#{id},#{username},#{password},#{ifFreeze})
+    </insert>
+    <update id="updateUser">
+        update t_user set username =#{username} where id = #{}
+    </update>
+    <delete id="deleteUser">
+        delete from t_user where id=#{id}
+    </delete>
+</mapper>
