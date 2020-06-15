@@ -1,0 +1,2 @@
+# simple-framework
+整合了之前自实现的Spring和MyBatis简易框架，项目中的demo模块为在web环境下对框架功能的简单测试
