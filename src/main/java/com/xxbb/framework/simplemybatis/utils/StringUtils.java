@@ -29,7 +29,7 @@ public class StringUtils {
         if ("t_".equals(str.substring(0, 2))) {
             return firstCharToUpperCase(lineToHump(str.substring(2)));
         } else {
-            return lineToHump(str);
+            return firstCharToUpperCase(lineToHump(str));
         }
 
     }
@@ -114,4 +114,5 @@ public class StringUtils {
     public static String stringTrim(String src) {
         return (null != src) ? src.trim() : null;
     }
+
 }
