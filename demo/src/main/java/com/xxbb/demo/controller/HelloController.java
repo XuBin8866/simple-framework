@@ -37,7 +37,9 @@ public class HelloController {
 
     @RequestMapping(value = "/show",method = RequestMethod.GET)
     @ResponseBody
-    public Object showResultRender(@RequestParam("name") String name){
+    public Object showResultRender(@RequestParam("username") String name,
+                                   @RequestParam("password") String password,
+    @RequestParam("dio") String dio){
         System.out.println("show请求"+name);
         User user=new User();
         user.setUsername("xxbb");
