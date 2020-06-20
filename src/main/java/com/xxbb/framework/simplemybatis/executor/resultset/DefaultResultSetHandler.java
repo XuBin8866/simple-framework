@@ -37,21 +37,31 @@ public class DefaultResultSetHandler implements ResultSetHandler {
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             //处理结果集
             while (resultSet.next()) {
-                //实例化结果集对应的类
-                E rowObject = (E) Class.forName(mappedStatement.getReturnType()).newInstance();
-                //遍历每一行数据并封装进对象中
-                for (int i = 0; i < resultSetMetaData.getColumnCount(); i++) {
-                    //获取列名和该列的值，从1开始，这里获取的是该列的别名
-                    //一般多表查询时意味着所查询的类也可能是由多个数据库对应类组合而成，那么
-                    //该类的属性名也将不会和数据库列名一一对应，故需要用别名去对应属性名
-                    String columnName = resultSetMetaData.getColumnLabel(i + 1);
-                    Object columnValue = resultSet.getObject(i + 1);
+                //如果查询是为了查询数据条数
+                String rowObjectType = mappedStatement.getReturnType();
+                //由于基本数据类型的包装类无法反射实例化，这里要提前判断
+                E rowObject;
+                if (rowObjectType.endsWith("Long")) {
+                    rowObject = (E) resultSet.getObject(1);
+                } else {
+                    //实例化结果集对应的类
+                    rowObject = (E) Class.forName(rowObjectType).newInstance();
+                    //遍历每一行数据并封装进对象中
+                    for (int i = 0; i < resultSetMetaData.getColumnCount(); i++) {
+                        //获取列名和该列的值，从1开始，这里获取的是该列的别名
+                        //一般多表查询时意味着所查询的类也可能是由多个数据库对应类组合而成，那么
+                        //该类的属性名也将不会和数据库列名一一对应，故需要用别名去对应属性名
+                        String columnName = resultSetMetaData.getColumnLabel(i + 1);
+                        Object columnValue = resultSet.getObject(i + 1);
 
-                    //将值赋值给类对象
-                    ReflectUtils.invokeSet(rowObject, columnName, columnValue);
+                        //数据库表中可能有空字段
+                        if(columnValue!=null){
+                            //将值赋值给类对象
+                            ReflectUtils.invokeSet(rowObject, columnName, columnValue);
+                        }
+                    }
                 }
                 result.add(rowObject);
-
             }
             return result;
         } catch (Exception e) {
