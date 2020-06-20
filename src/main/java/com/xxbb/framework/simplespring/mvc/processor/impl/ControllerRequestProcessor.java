@@ -7,6 +7,7 @@ import com.xxbb.framework.simplespring.mvc.RequestProcessorChain;
 import com.xxbb.framework.simplespring.mvc.annotation.RequestMapping;
 import com.xxbb.framework.simplespring.mvc.annotation.RequestParam;
 import com.xxbb.framework.simplespring.mvc.annotation.ResponseBody;
+import com.xxbb.framework.simplespring.mvc.cache.ResultCache;
 import com.xxbb.framework.simplespring.mvc.processor.RequestProcessor;
 import com.xxbb.framework.simplespring.mvc.render.ResultRender;
 import com.xxbb.framework.simplespring.mvc.render.impl.JsonResultRender;
@@ -24,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -38,6 +40,10 @@ public class ControllerRequestProcessor implements RequestProcessor {
      * 请求和对应Controller方法的映射集合
      */
     private Map<RequestPathInfo, ControllerMethod> requestPathInfoControllerMethodMap=new ConcurrentHashMap<>();
+    /**
+     * 存储查询请求结果的缓存
+     */
+    private final ResultCache<String, Object> resultCaches;
 
     public Map<RequestPathInfo, ControllerMethod> getRequestPathInfoControllerMethodMap() {
         return requestPathInfoControllerMethodMap;
@@ -50,6 +56,8 @@ public class ControllerRequestProcessor implements RequestProcessor {
 
     public ControllerRequestProcessor() {
         this.beanContainer = BeanContainer.getInstance();
+        //初始化缓存
+        resultCaches = new ResultCache<>();
         //获取所有被Controller标记的类
         Set<Class<?>> requestMappingSet=beanContainer.getClassesByAnnotation(Controller.class);
         initRequestPathInfoControllerMethodMap(requestMappingSet);
@@ -133,18 +141,36 @@ public class ControllerRequestProcessor implements RequestProcessor {
     @Override
     public boolean process(RequestProcessorChain requestProcessorChain) {
         //1.解析HttpServletRequest的请求方法，请求路径，获取对应的ControllerMethod实例
-        String method=requestProcessorChain.getRequestMethod();
-        String path=requestProcessorChain.getRequestPath();
-        ControllerMethod controllerMethod=this.requestPathInfoControllerMethodMap.get(new RequestPathInfo(method,path));
-        if(null==controllerMethod){
-            log.error("can not found controllerMethod which path is{}, method is {}",path,method);
-            requestProcessorChain.setResultRender(new ResourceNotFoundResultRender(method,path));
+        String method = requestProcessorChain.getRequestMethod();
+        String path = requestProcessorChain.getRequestPath();
+        //和method，path一起用来作为结果缓存的key
+        String requestParametersMap=requestProcessorChain.getReq().getParameterMap().toString();
+        ControllerMethod controllerMethod = this.requestPathInfoControllerMethodMap.get(new RequestPathInfo(method, path));
+        if (null == controllerMethod) {
+            log.error("can not found controllerMethod which path is{}, method is {}", path, method);
+            requestProcessorChain.setResultRender(new ResourceNotFoundResultRender(method, path));
             return false;
         }
         //2.解析请求参数，并传递给获取到的controllerMethod实例去执行
-        Object result=invokeControllerMethod(controllerMethod,requestProcessorChain.getReq());
+        Object result;
+        //4种需要对缓存进行处理的请求类型
+        String[] requestPrefix = new String[]{"query", "add", "modify", "remove"};
+        if (path.startsWith(requestPrefix[0])) {
+            //如果时查询请求则将结果存入缓存
+            Callable<Object> task = () -> invokeControllerMethod(controllerMethod, requestProcessorChain.getReq());
+            resultCaches.setTask(task);
+            result = resultCaches.get(path + "," + method+":"+requestParametersMap);
+        } else if (path.startsWith(requestPrefix[1]) || path.startsWith(requestPrefix[2]) || path.startsWith(requestPrefix[3])) {
+            //如果有增删改请求则刷新缓存
+            resultCaches.clear();
+            result = invokeControllerMethod(controllerMethod, requestProcessorChain.getReq());
+        } else {
+            //其他情况则直接实现方法
+            result = invokeControllerMethod(controllerMethod, requestProcessorChain.getReq());
+        }
+
         //3.根据解析结果，选择对应的render进行渲染
-        setResultRender(result,controllerMethod,requestProcessorChain);
+        setResultRender(result, controllerMethod, requestProcessorChain);
         return true;
     }
 
