@@ -143,8 +143,17 @@ public class ControllerRequestProcessor implements RequestProcessor {
         //1.解析HttpServletRequest的请求方法，请求路径，获取对应的ControllerMethod实例
         String method = requestProcessorChain.getRequestMethod();
         String path = requestProcessorChain.getRequestPath();
-        //和method，path一起用来作为结果缓存的key
-        String requestParametersMap=requestProcessorChain.getReq().getParameterMap().toString();
+        //和method，path一起用来作为结果缓存的key,请求参数及其值的不同是使key成为唯一标识的保障
+        //但一定要先将请求参数读取出来，因为请求参数的值是一个String数组
+        //数组内的值可能相同，但是由于每次请求生成的String数组不同导致永远没有相同的Key
+        Map<String,String> requestParametersMap=new HashMap<>(16);
+        for (Map.Entry<String, String[]> parameter : requestProcessorChain.getReq().getParameterMap().entrySet()) {
+            if (!ValidationUtil.isEmpty(parameter.getValue())) {
+                //只支持一个参数对应一个值的形式
+                requestParametersMap.put(parameter.getKey(), parameter.getValue()[0]);
+            }
+        }
+        String requestParametersMapToString=requestParametersMap.toString();
         ControllerMethod controllerMethod = this.requestPathInfoControllerMethodMap.get(new RequestPathInfo(method, path));
         if (null == controllerMethod) {
             log.error("can not found controllerMethod which path is{}, method is {}", path, method);
@@ -155,20 +164,23 @@ public class ControllerRequestProcessor implements RequestProcessor {
         Object result;
         //4种需要对缓存进行处理的请求类型
         String[] requestPrefix = new String[]{"query", "add", "modify", "remove"};
-        if (path.startsWith(requestPrefix[0])) {
+        if (path.contains(requestPrefix[0])) {
             //如果时查询请求则将结果存入缓存
+            String cacheKey=path + "," + method+":"+requestParametersMapToString;
+            log.debug("匹配到查询请求:{},使用缓存",cacheKey);
             Callable<Object> task = () -> invokeControllerMethod(controllerMethod, requestProcessorChain.getReq());
             resultCaches.setTask(task);
-            result = resultCaches.get(path + "," + method+":"+requestParametersMap);
-        } else if (path.startsWith(requestPrefix[1]) || path.startsWith(requestPrefix[2]) || path.startsWith(requestPrefix[3])) {
+            result = resultCaches.get(cacheKey);
+            log.debug("当前缓存数：{}",resultCaches.size());
+        } else if (path.contains(requestPrefix[1]) || path.contains(requestPrefix[2]) || path.contains(requestPrefix[3])) {
             //如果有增删改请求则刷新缓存
+            log.debug("匹配到修改请求：{}，刷新缓存",path);
             resultCaches.clear();
             result = invokeControllerMethod(controllerMethod, requestProcessorChain.getReq());
         } else {
             //其他情况则直接实现方法
             result = invokeControllerMethod(controllerMethod, requestProcessorChain.getReq());
         }
-
         //3.根据解析结果，选择对应的render进行渲染
         setResultRender(result, controllerMethod, requestProcessorChain);
         return true;

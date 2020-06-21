@@ -160,7 +160,7 @@ public class ResultCache<K, V> {
                 Node<K, V> node = caches.get(key);
 
                 if (node == null) {
-                    log.info("该请求的响应缓存不存在，调用线程执行任务");
+                    log.debug("该请求的响应缓存不存在，调用线程执行任务");
                     try {
                         Future<V> future = pool.submit(task);
                         node = new Node<>(key, future.get());
@@ -169,7 +169,7 @@ public class ResultCache<K, V> {
                         log.error(e.getMessage());
                     }
                 } else {
-                    log.info("该请求的响应缓存存在：{}", node.value);
+                    log.debug("该请求的响应缓存存在：{}", node.value);
                 }
 
                 moveToHead(node);
@@ -195,14 +195,21 @@ public class ResultCache<K, V> {
      */
     private void put(K key, Node<K, V> value) {
         if (currentSize >= capacity) {
+
             //移除map中节点
-            caches.remove(last.key);
+            Node<K, V> remove = caches.remove(last.key);
+            log.debug("缓存已满，删除最近最少使用的缓存元素：{}",remove);
+            currentSize--;
             //将节点从链表中移除
             removeLast();
         }
-        caches.putIfAbsent(key, value);
-        //将节点移至首部的操作放在get方法里了
+        //不使用putIfAbsent的原因是无法判断是否向缓存中添加了元素
+        caches.put(key, value);
+
         currentSize++;
+
+        //将节点移至首部的操作放在get方法里了
+
 
     }
 
