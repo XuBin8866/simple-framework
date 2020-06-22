@@ -161,7 +161,7 @@ public class DefaultSqlSession implements SqlSession {
                 sql.append("where ");
                 for (ColumnInfo columnInfo : primaryKeys) {
                     sql.append(StringUtils.humpToLine(columnInfo.getName())).append("=?,");
-                    params.add(ReflectUtils.invokeGet(type, columnInfo.getName()));
+                    params.add(ReflectUtils.invokeGet(type, StringUtils.lineToHump(columnInfo.getName())));
                 }
 
             }
@@ -250,7 +250,7 @@ public class DefaultSqlSession implements SqlSession {
                 sql.append("delete from ").append(tableInfo.getTableName()).append(" where ");
                 for (ColumnInfo columnInfo : primaryKeys) {
                     sql.append(StringUtils.humpToLine(columnInfo.getName())).append("=?,");
-                    params.add(ReflectUtils.invokeGet(type, columnInfo.getName()));
+                    params.add(ReflectUtils.invokeGet(type,StringUtils.lineToHump(columnInfo.getName())));
                 }
             }
         });
