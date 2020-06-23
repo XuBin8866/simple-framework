@@ -119,6 +119,7 @@ public class ResultCache<K, V> {
         first = null;
         last = null;
         caches.clear();
+        currentSize=0;
     }
 
     /**
@@ -178,7 +179,6 @@ public class ResultCache<K, V> {
                 moveToHead(node);
                 //获取出错则删除缓存，避免污染
                 try {
-                    assert node != null;
                     return node.value;
                 } catch (Exception e) {
                     remove(key);
