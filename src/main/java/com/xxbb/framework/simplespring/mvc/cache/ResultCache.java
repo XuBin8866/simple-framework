@@ -167,6 +167,8 @@ public class ResultCache<K, V> {
                         put(key, node);
                     } catch (ExecutionException | InterruptedException e) {
                         log.error(e.getMessage());
+                        //出错一定要抛出异常，不然这里会陷入死循环
+                        throw new RuntimeException(e);
                     }
                 } else {
                     log.debug("该请求的响应缓存存在：{}", node.value);
