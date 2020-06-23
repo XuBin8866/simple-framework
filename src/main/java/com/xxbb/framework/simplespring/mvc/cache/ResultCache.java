@@ -167,6 +167,7 @@ public class ResultCache<K, V> {
                         put(key, node);
                     } catch (ExecutionException | InterruptedException e) {
                         log.error(e.getMessage());
+                        remove(key);
                         //出错一定要抛出异常，不然这里会陷入死循环
                         throw new RuntimeException(e);
                     }
