@@ -165,6 +165,7 @@ public class BeanContainer {
 
     /**
      * 通过接口或者父类获取到对应的class
+     * 和上面的方法大部分相同，可以使用模板方法优化，但没必要
      * @param classOrInterface 接口或父类
      * @return 集合
      */
@@ -194,4 +195,5 @@ public class BeanContainer {
     public int size() {
         return beanMap.size();
     }
+
 }
