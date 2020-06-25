@@ -2,6 +2,7 @@
 整合了之前自实现的Spring和MyBatis简易框架，项目中的demo模块为在web环境下对框架功能的简单测试
 
 **框架使用方式**
+
 和Spring框架的使用方式类似，如果直接将该框架作为Module引入则无需做任何修改，框架的配置文件名默认为application.properties,可在DispatcherServlet中进行对参数命名进行修改
 
 ```java
