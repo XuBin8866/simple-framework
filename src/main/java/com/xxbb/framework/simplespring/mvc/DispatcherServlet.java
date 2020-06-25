@@ -29,7 +29,8 @@ import java.util.Properties;
  * @author xxbb
  */
 @WebServlet(name="DispatcherServlet" ,urlPatterns="/*",
-initParams ={@WebInitParam(name="contextConfigLocation",value = "application.properties")} )
+initParams ={@WebInitParam(name="contextConfigLocation",value = "application.properties")},
+loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
     /**
      * 保存application.properties配置文件中的内容
