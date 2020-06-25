@@ -7,7 +7,8 @@
 
 ```java
 @WebServlet(name="DispatcherServlet" ,urlPatterns="/*",
-initParams ={@WebInitParam(name="contextConfigLocation",value = "application.properties")} )
+initParams ={@WebInitParam(name="contextConfigLocation",value = "application.properties")},
+loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {}
 ```
 
