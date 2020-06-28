@@ -256,5 +256,20 @@ public class MyDataSourceImpl implements MyDataSource {
         return createdCount;
     }
 
+    /**
+     * 关闭连接池
+     */
+    public void close(){
+        LogUtils.getLogger().debug("正在关闭数据库连接池");
+        for(Connection conn:conns){
+            try {
+                conn.close();
+            } catch (SQLException throwables) {
+                LogUtils.getLogger().debug("关闭连接出错：{}",throwables.getMessage());
+                throwables.printStackTrace();
+            }
+        }
+        LogUtils.getLogger().debug("数据库连接池关闭完成");
+    }
 
 }

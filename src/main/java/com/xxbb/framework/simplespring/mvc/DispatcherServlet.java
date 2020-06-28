@@ -1,6 +1,7 @@
 package com.xxbb.framework.simplespring.mvc;
 
 
+import com.xxbb.framework.simplemybatis.pool.MyDataSourceImpl;
 import com.xxbb.framework.simplemybatis.session.SqlSessionFactoryBuilder;
 import com.xxbb.framework.simplespring.aop.AspectWeaver;
 import com.xxbb.framework.simplespring.core.BeanContainer;
@@ -21,7 +22,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
@@ -104,6 +109,24 @@ public class DispatcherServlet extends HttpServlet {
                 }
             }
         }
+    }
+
+    @Override
+    public void destroy() {
+        //注销驱动
+        Enumeration<Driver> drivers = DriverManager.getDrivers();
+        Driver driver = null;
+        while (drivers.hasMoreElements()) {
+            try {
+                driver = drivers.nextElement();
+                DriverManager.deregisterDriver(driver);
+                LogUtil.getLogger().debug("deregister success : driver {}" ,driver.toString());
+            } catch (SQLException e) {
+                LogUtil.getLogger().error("deregister failed : driver {}" ,driver.toString());
+            }
+        }
+        //关闭连接池
+        MyDataSourceImpl.getInstance().close();
     }
 
 }
