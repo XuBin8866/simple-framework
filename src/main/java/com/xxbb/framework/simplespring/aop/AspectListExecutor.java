@@ -7,6 +7,7 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -47,7 +48,8 @@ public class AspectListExecutor implements MethodInterceptor {
             //2.执行被代理类的方法
             returnValue=methodProxy.invokeSuper(o, args);
             //3.如果代理方法返回正常，则安装order的顺序降序执行完所有的Aspect的afterRunning方法
-            returnValue=invokeAfterReturningAdvices(method,args,returnValue);
+            //目前后置通知不对返回结果returnValue进行处理
+            invokeAfterReturningAdvices(method,args,returnValue);
         }catch (Exception e){
             //4.如果代理方法返回异常，则安装order的顺序降序执行完所有的Aspect的afterThrowing方法
             invokeAfterThrowingAdvices(method,args,e);
@@ -105,7 +107,7 @@ public class AspectListExecutor implements MethodInterceptor {
      * @return 返回值
      */
     private Object invokeAfterReturningAdvices(Method method, Object[] args, Object returnValue) throws Throwable {
-        // TODO 每一次的result都被刷新了 但目前并没有想到什么地方需要用到这个返回值
+        // 虽然result每次都被刷新，但再没有特殊处理的情况下他一直都是被代理方法的返回值
         // 也就是每次的返回值在默认情况下就是被反射执行的方法的返回值
         Object result=null;
         for(int i=sortedAspectInfoList.size()-1;i>=0;i--){
@@ -127,7 +129,8 @@ public class AspectListExecutor implements MethodInterceptor {
     }
 
     private List<AspectInfo> sortAspectInfoList(List<AspectInfo> aspectInfoList) {
-        aspectInfoList.sort((o1, o2) -> o1.getOrderIndex() - o2.getOrderIndex());
+        //按Order从小到大的顺序排序
+        aspectInfoList.sort(Comparator.comparingInt(AspectInfo::getOrderIndex));
         return aspectInfoList;
     }
 
