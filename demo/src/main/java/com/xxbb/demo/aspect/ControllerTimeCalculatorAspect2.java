@@ -12,17 +12,17 @@ import java.lang.reflect.Method;
 /**
  * @author xxbb
  */
-@Aspect(pointcut = "execution(* com.xxbb.demo.controller..*.*(..))")
-@Order(1)
+@Aspect(pointcut = "execution(* com.xxbb.demo.controller.HelloController.*(..))")
+@Order()
 public class ControllerTimeCalculatorAspect2 extends DefaultAspect {
     private final Logger logger= LogUtil.getLogger();
     @Override
-    public void before(Class<?> targetClass, Method method, Object[] args) throws Throwable {
+    public void before(Class<?> targetClass, Method method, Object[] args) {
         logger.debug("理论上第二个执行的前置方法");
 
     }
     @Override
-    public void after(Class<?> targetClass, Method method, Object[] args) throws Throwable {
+    public void after(Class<?> targetClass, Method method, Object[] args)  {
         logger.info("执行最终方法2");
     }
 }
