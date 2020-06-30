@@ -1,6 +1,4 @@
-/**
- *
- */
+
 package com.xxbb.demo.mapper;
 
 
