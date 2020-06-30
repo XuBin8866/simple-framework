@@ -2,6 +2,7 @@ package com.xxbb.framework.simplespring.aop;
 
 
 import com.xxbb.framework.simplespring.aop.aspect.AspectInfo;
+import com.xxbb.framework.simplespring.util.LogUtil;
 import com.xxbb.framework.simplespring.util.ValidationUtil;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -38,6 +39,7 @@ public class AspectListExecutor implements MethodInterceptor {
         collectAccurateMatchedAspectList(method);
         //没有切面对方法进行增强的情况
         if(ValidationUtil.isEmpty(sortedAspectInfoList)){
+            LogUtil.getLogger().warn("There is no Aspect for this bean");
             returnValue=methodProxy.invokeSuper(o,args);
             return returnValue;
         }
