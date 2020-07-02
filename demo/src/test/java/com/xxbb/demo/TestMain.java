@@ -13,6 +13,7 @@ import org.junit.Test;
  */
 
 public class TestMain {
+
     @Test
     public void IocTest(){
         SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");

@@ -164,8 +164,15 @@ public class ResultCache<K, V> {
                 log.debug("该请求的响应缓存不存在，调用线程执行任务");
                 try {
                     Future<V> future = pool.submit(task);
-                    node = new Node<>(key, future.get());
-                    put(key, node);
+                    //循环等待线程执行完成
+                    boolean flag=true;
+                    while(flag){
+                        if(future.isDone()&&!future.isCancelled()){
+                            node = new Node<>(key, future.get());
+                            put(key, node);
+                            flag=false;
+                        }
+                    }
                 } catch (ExecutionException | InterruptedException e) {
                     log.error(e.getMessage());
                     remove(key);
