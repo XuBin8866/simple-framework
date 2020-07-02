@@ -2,16 +2,15 @@ package com.xxbb.framework.simplespring.core;
 
 
 import com.xxbb.framework.simplespring.aop.annotation.Aspect;
-import com.xxbb.framework.simplespring.core.annotation.Component;
-import com.xxbb.framework.simplespring.core.annotation.Controller;
-import com.xxbb.framework.simplespring.core.annotation.Repository;
-import com.xxbb.framework.simplespring.core.annotation.Service;
+import com.xxbb.framework.simplespring.core.annotation.*;
 import com.xxbb.framework.simplespring.util.ClassUtil;
 import com.xxbb.framework.simplespring.util.LogUtil;
 import com.xxbb.framework.simplespring.util.ValidationUtil;
 import org.slf4j.Logger;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,7 +26,7 @@ public class BeanContainer {
      * 加载bean的注解列表
      */
     private static final List<Class<? extends Annotation>> BEAN_ANNOTATION = Arrays.asList(
-            Component.class, Controller.class, Service.class, Repository.class, Aspect.class);
+            Component.class, Controller.class, Service.class, Repository.class, Aspect.class, Configuration.class);
     /**
      * 判断容器是否被加载
      */
@@ -83,6 +82,10 @@ public class BeanContainer {
                 if (clazz.isAnnotationPresent(annotation)) {
                     LOGGER.debug("load bean: "+clazz.getName());
                     beanMap.put(clazz, ClassUtil.newInstance(clazz, true));
+                    //如果注解为Configuration，则需要将该类中被@Bean标记的方法返回的对象也加载进容器中
+                    if(Configuration.class==annotation){
+                        loadConfigurationBean(clazz);
+                    }
                 }
             }
         }
@@ -194,6 +197,32 @@ public class BeanContainer {
      */
     public int size() {
         return beanMap.size();
+    }
+
+    /**
+     * 加载配置类中的bean对象
+     * @param clazz 配置类的class文件
+     */
+    private void loadConfigurationBean(Class<?> clazz){
+        Method[] methods=clazz.getDeclaredMethods();
+        for(Method method:methods){
+            if(method.isAnnotationPresent(Bean.class)){
+                Object configuration =beanMap.get(clazz);
+                Object bean = null;
+                try {
+                    bean=method.invoke(configuration);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    LOGGER.error("load configuration bean error: {}",e.getMessage());
+                    e.printStackTrace();
+                }
+                if(bean!=null){
+                    Class<?> beanClazz= bean.getClass();
+                    LOGGER.debug("load bean :{}",beanClazz.getName());
+                    beanMap.put(beanClazz,bean);
+                }
+
+            }
+        }
     }
 
 }

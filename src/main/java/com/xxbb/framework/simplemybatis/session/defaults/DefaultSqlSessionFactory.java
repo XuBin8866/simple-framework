@@ -169,9 +169,9 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
                 //反射获取该表对应的po类
                 Class<?> clazz = Class.forName(Configuration.getProperty(Constant.PO_LOCATION) + "." + StringUtils.tableNameToClassName(tableName));
                 //将类与表的映射关系存入configuration对象的map中
-                logger.debug("获取数据库表对象：" + tableInfo);
+                logger.trace("获取数据库表对象：" + tableInfo);
                 this.configuration.getClassToTableInfoMap().put(clazz, tableInfo);
-                logger.debug("加载实体类与数据库表的映射：" +
+                logger.trace("加载实体类与数据库表的映射：" +
                        Configuration.getProperty(Constant.PO_LOCATION) + "." + StringUtils.tableNameToClassName(tableName) + "<------>" +
                         tableName);
             }

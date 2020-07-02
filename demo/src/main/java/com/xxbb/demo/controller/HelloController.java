@@ -1,5 +1,6 @@
 package com.xxbb.demo.controller;
 
+import com.xxbb.demo.domain.Account;
 import com.xxbb.demo.domain.User;
 import com.xxbb.demo.service.HelloService;
 import com.xxbb.framework.simplespring.core.annotation.Controller;
@@ -21,6 +22,8 @@ import java.util.Map;
 public class HelloController {
     @Autowired
     HelloService helloService;
+    @Autowired
+    Account account;
     @RequestMapping("/")
     public String index(){
         return "index.jsp";
