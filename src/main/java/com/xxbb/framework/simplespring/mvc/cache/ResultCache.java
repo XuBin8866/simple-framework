@@ -1,6 +1,5 @@
 package com.xxbb.framework.simplespring.mvc.cache;
 
-
 import com.xxbb.framework.simplespring.util.LogUtil;
 import org.slf4j.Logger;
 
@@ -181,7 +180,10 @@ public class ResultCache<K, V> {
             if (node == null) {
                 log.debug("该请求的响应缓存不存在，调用线程执行任务");
                 try {
-                    Future<V> future = pool.submit(task);
+                    if(task==null){
+                        throw new RuntimeException("Callable task is null");
+                    }
+                    Future<V> future=pool.submit(task);
                     //循环等待线程执行完成
                     boolean flag=true;
                     while(flag){
@@ -211,6 +213,7 @@ public class ResultCache<K, V> {
                 log.error(e.getMessage());
             }
         } finally {
+            this.task=null;
             lock.unlock();
         }
         return null;
