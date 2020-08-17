@@ -1,7 +1,7 @@
 # simple-framework
 整合了之前自实现的Spring和MyBatis简易框架，项目中的demo模块为在web环境下对框架功能的简单测试
 
-**框架使用方式**
+#### **框架使用方式**
 
 和Spring框架的使用方式类似，如果直接将该框架作为Module引入则无需做任何修改，框架的配置文件名默认为application.properties,可在DispatcherServlet中进行对参数命名进行修改
 
@@ -71,4 +71,61 @@ log4j.appender.E.Append = true
 log4j.appender.E.Threshold = ERROR
 log4j.appender.E.layout = org.apache.log4j.PatternLayout
 log4j.appender.E.layout.ConversionPattern = %-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n
+```
+#### **仿MyBatis的ORM框架使用方式**
+数据库操作默认是关闭自动提交，可以使用<code>SqlSession::setAutocommit(boolean flag)</code>开启自动提交，默认值为false（关闭自动提交）。在自动提交关闭的状态下必须使用<code>SqlSession::commit()</code>方法手动提交事务。在数据库操作完成后需要调用code>SqlSession::close()</code>方法释放session持有的数据库连接对象回连接池。
+###### 1.获取接口代理对象读取mapper.xml文件的方式
+mapper文件和mapper接口必须同名对应
+```java
+public void sqlTestMain() {
+        //构建sql工厂
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
+        SqlSession session = factory.openSession();
+        UserMapper userMapper = session.getMapper(UserMapper.class);
+        System.out.println("testMain.select：" + userMapper.getAll());
+        System.out.println("testMain.update：" + userMapper.updateUser("xxbb", 1));
+        System.out.println("testMain.insert:" + userMapper.insertUser(24, "zzxx", "123456", 1));
+        System.out.println("testMain.delete: " + userMapper.deleteUser(24));
+        //提交事务
+        session.commit();
+        //关闭事务，释放数据库连接
+        session.close();
+    }
+```
+###### 2.以面向对象的方式
+只适用于增删改操作，且修改和删除语句的检索条件是主键，如果数据库表没有主键则无法进行修改和删除操作
+```java
+public void testUpdate() {
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
+        SqlSession session = factory.openSession();
+        User u = new User();
+        u.setId(1);
+        u.setUsername("xxbb");
+        System.out.println("testUpdate：" + session.update(u));
+        session.commit();
+        session.close();
+    }
+
+    public void testInsert() {
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
+        SqlSession session = factory.openSession();
+        User u = new User();
+        u.setId(24);
+        u.setUsername("zzxx");
+        u.setPassword("123456");
+        u.setIfFreeze(1);
+        System.out.println("testInsert：" + session.insert(u));
+        session.commit();
+        session.close();
+    }
+
+    public void testDelete() {
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
+        SqlSession session = factory.openSession();
+        User u = new User();
+        u.setId(24);
+        System.out.println("testDelete:" + session.delete(u));
+        session.commit();
+        session.close();
+    }
 ```
