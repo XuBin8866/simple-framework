@@ -93,7 +93,7 @@ public void sqlTestMain() {
     }
 ```
 ###### 2.以面向对象的方式
-只适用于增删改操作，且修改和删除语句的检索条件是主键，如果数据库表没有主键则无法进行修改和删除操作
+只适用于增删改操作，且修改和删除语句的检索条件是主键，无法进行范围性的我修改和删除。如果数据库表没有主键则无法进行修改和删除操作。如果传入对象对应主键的成员变量值为空则无法修改数据，即受影响的行数为0
 ```java
 public void testUpdate() {
         SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
