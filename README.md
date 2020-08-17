@@ -73,7 +73,7 @@ log4j.appender.E.layout = org.apache.log4j.PatternLayout
 log4j.appender.E.layout.ConversionPattern = %-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n
 ```
 #### **仿MyBatis的ORM框架使用方式**
-数据库操作默认是关闭自动提交，可以使用<code>SqlSession::setAutocommit(boolean flag)</code>开启自动提交，默认值为false（关闭自动提交）。在自动提交关闭的状态下必须使用<code>SqlSession::commit()</code>方法手动提交事务。在数据库操作完成后需要调用code>SqlSession::close()</code>方法释放session持有的数据库连接对象回连接池。
+数据库操作默认是关闭自动提交，可以使用<code>SqlSession::setAutocommit(boolean flag)</code>开启自动提交，默认值为false（关闭自动提交）。在自动提交关闭的状态下必须使用<code>SqlSession::commit()</code>方法手动提交事务。在数据库操作完成后需要调用<code>SqlSession::close()</code>方法释放session持有的数据库连接对象回连接池。
 ###### 1.获取接口代理对象读取mapper.xml文件的方式
 mapper文件和mapper接口必须同名对应
 ```java
