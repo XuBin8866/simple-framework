@@ -31,10 +31,26 @@ public class SimpleExecutor implements Executor {
      * 连接池对象
      */
     private final MyDataSource dataSource;
-
+    /**
+     * 连接对象
+     */
+    private final Connection connection;
+    /**
+     * 是否自动提交，默认是false;
+     */
+    private boolean ifAutoCommit=false;
+    /**
+     * 日志对象
+     */
     private static final Logger LOGGER = LogUtils.getLogger();
     public SimpleExecutor(Configuration configuration) {
         dataSource = configuration.getDataSource();
+        try {
+            connection=dataSource.getConnection();
+        } catch (SQLException e) {
+            LOGGER.error(e.getLocalizedMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -45,11 +61,9 @@ public class SimpleExecutor implements Executor {
      * @param executorCallback 会调接口
      * @return List结果集或受影响的行数
      */
-    private Object executeTemplate(MappedStatement mappedStatement, Object parameter, MyCallback executorCallback) {
-        Connection connection = null;
+    private Object executeTemplate(MappedStatement mappedStatement, Object parameter, MyCallback executorCallback)  {
         try {
-            //获取连接
-            connection = dataSource.getConnection();
+            connection.setAutoCommit(ifAutoCommit);
             //实例化StatementHandler对象
             StatementHandler statementHandler = new SimpleStatementHandler(mappedStatement);
             //对mapperStatement中的sql语句进行处理，去除头尾空格，将#{}替换成?,封装成preparedStatement对象
@@ -60,10 +74,8 @@ public class SimpleExecutor implements Executor {
             LOGGER.debug("preparedStatement:" + preparedStatement);
             return executorCallback.doExecutor(statementHandler, preparedStatement);
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            dataSource.returnConnection(connection);
+            LOGGER.error(e.getLocalizedMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -142,5 +154,51 @@ public class SimpleExecutor implements Executor {
         }
     }
 
+    /**
+     * 设置自动提交，默认是false，不自动提交
+     * @param ifAutoCommit 是否自动提交
+     */
+    @Override
+    public void setAutoCommit(boolean ifAutoCommit){
+        this.ifAutoCommit=ifAutoCommit;
+    }
 
+    /**
+     * 事务回滚
+     */
+    @Override
+    public void rollback(){
+        try {
+            connection.rollback();
+        } catch (SQLException throwables) {
+            LOGGER.error(throwables.getMessage());
+            throw new RuntimeException(throwables.getMessage());
+        }
+    }
+
+    /**
+     * 提交事务
+     */
+    @Override
+    public void commit(){
+        try {
+            connection.commit();
+        } catch (SQLException throwables) {
+            LOGGER.error(throwables.getMessage());
+            throw new RuntimeException(throwables.getMessage());
+        }
+    }
+
+    /**
+     * 关闭连接
+     */
+    @Override
+    public void closeConnection() {
+        try {
+            this.connection.close();
+        } catch (SQLException throwables) {
+            LOGGER.error(throwables.getMessage());
+            throw new RuntimeException(throwables.getMessage());
+        }
+    }
 }

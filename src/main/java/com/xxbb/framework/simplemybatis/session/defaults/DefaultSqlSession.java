@@ -275,4 +275,24 @@ public class DefaultSqlSession implements SqlSession {
     public Executor getExecutor() {
         return executor;
     }
+
+    @Override
+    public void setAutoCommit(boolean flag) {
+        this.executor.setAutoCommit(flag);
+    }
+
+    @Override
+    public void rollback() {
+        this.executor.rollback();
+    }
+
+    @Override
+    public void commit() {
+        this.executor.commit();
+    }
+
+    @Override
+    public void close() {
+        this.executor.closeConnection();
+    }
 }

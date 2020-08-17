@@ -4,6 +4,7 @@ package com.xxbb.framework.simplemybatis.executor;
 
 import com.xxbb.framework.simplemybatis.mapping.MappedStatement;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -30,4 +31,25 @@ public interface Executor {
      * @return 返回值
      */
     int doUpdate(MappedStatement mappedStatement, Object parameter);
+
+    /**
+     * 设置自动提交，默认是false，不自动提交
+     * @param ifAutoCommit 是否自动提交
+     */
+    void setAutoCommit(boolean ifAutoCommit);
+
+    /**
+     * 事务回滚
+     */
+    void rollback();
+
+    /**
+     * 提交事务
+     */
+    void commit();
+
+    /**
+     * 关闭连接
+     */
+    void closeConnection();
 }

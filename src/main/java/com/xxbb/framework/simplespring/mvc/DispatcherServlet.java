@@ -95,7 +95,6 @@ public class DispatcherServlet extends HttpServlet {
         InputStream is=null;
         try {
             is = this.getClass().getClassLoader().getResourceAsStream(contextConfigLocation);
-            System.out.println(is);
             contextCofig.load(is);
         } catch (IOException e) {
             LogUtil.getLogger().error(e.getMessage());

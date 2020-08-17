@@ -42,6 +42,8 @@ public class TestMain {
         u.setId(1);
         u.setUsername("xxbb");
         System.out.println("testUpdate：" + session.update(u));
+        session.commit();
+        session.close();
     }
 
     public void testInsert() {
@@ -53,6 +55,8 @@ public class TestMain {
         u.setPassword("123456");
         u.setIfFreeze(1);
         System.out.println("testInsert：" + session.insert(u));
+        session.commit();
+        session.close();
     }
 
     public void testDelete() {
@@ -61,6 +65,8 @@ public class TestMain {
         User u = new User();
         u.setId(24);
         System.out.println("testDelete:" + session.delete(u));
+        session.commit();
+        session.close();
     }
 
     public void sqlTestMain() {
@@ -72,6 +78,7 @@ public class TestMain {
         System.out.println("testMain.update：" + userMapper.updateUser("xxbb", 1));
         System.out.println("testMain.insert:" + userMapper.insertUser(24, "zzxx", "123456", 1));
         System.out.println("testMain.delete: " + userMapper.deleteUser(24));
-
+        session.commit();
+        session.close();
     }
 }

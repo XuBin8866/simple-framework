@@ -108,4 +108,26 @@ public interface SqlSession {
      * @return 执行器
      */
     Executor getExecutor();
+
+    /**
+     * 设置自动提交，默认是false;
+     * @param flag false
+     */
+    void setAutoCommit(boolean flag);
+
+    /**
+     * 事务回滚策略，默认数据库事务回滚
+     */
+    void rollback();
+
+    /**
+     * 提交事务
+     */
+    void commit();
+
+    /**
+     * 关闭连接
+     */
+    void close();
+
 }
