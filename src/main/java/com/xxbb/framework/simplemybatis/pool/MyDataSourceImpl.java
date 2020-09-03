@@ -199,8 +199,8 @@ public class MyDataSourceImpl implements MyDataSource {
         //判断池中是否还有连接
         synchronized (MONITOR) {
             if (conns.size() > 0) {
-                LOGGER.debug("获取到连接：" + conns.getFirst() + "  当前已创建连接数量：" + createdCount + "  当前空闲连接数" + (conns.size() - 1));
-                return conns.removeFirst();
+                LOGGER.debug("获取到连接：" + conns.getLast() + "  当前已创建连接数量：" + createdCount + "  当前空闲连接数" + (conns.size() - 1));
+                return conns.removeLast();
             }
             //如果没有空连接，则调用自动增长方法
             if (createdCount < maxCount) {
