@@ -80,24 +80,24 @@ public class ResultCache<K, V> {
      * capacity+1=realCapacity*DEFAULT_LOAD_FACTORY
      * 即realCapacity=(capacity+1)/DEFAULT_LOAD_FACTORY，
      * 这样能保证HashMap在计算阈值时至少有：realCapacity*DEFAULT_LOAD_FACTORY>=capacity的情况，
-     *
+     * <p>
      * 也可以不加一直接将结果向上取整realCapacity=Math.cell(capacity/DEFAULT_LOAD_FACTORY),
      * 这样能保证HashMap在计算阈值时一定有realCapacity*DEFAULT_LOAD_FACTORY=capacity情况
      * 这里我选择前者，capacity+1的算法，避免使用Math的方法。
-     *
-     *
+     * <p>
+     * <p>
      * <p:回顾当时思路>
      * 之前这里的HashMap实际容量计算向上取整即realCapacity=Math.cell((capacity+1)/DEFAULT_LOAD_FACTORY)，
      * 这样能保证计算得到的实际HashMap容器大小的扩容阈值一定会比缓存可用容量大1，保证不触发扩容
      * （当需要缓存容器大小>=6291456时，需要的大小和扩容阈值会相等,
      * 当缓存容器大小>=25165833 两千五百一十六万之后会发生缓存容量大于扩容阈值的情况）
-     *
+     * <p>
      * 如果使用realCapacity=capacity/DEFAULT_LOAD_FACTORY+1,
      * 则在16777221 一千六百七十七万之后才会发生缓存容量大于扩容阈值的情况
-     *
+     * <p>
      * 之前认为HashMap当容器元素个数等于扩容阈值就会触发扩容，实际上是要大于扩容阈值才会触发
-     *
-     *
+     * <p>
+     * <p>
      * <p:回顾当时思路>
      * 同时实际上HashMap是先存储元素，再进行扩容阈值判断的（之前没认真看HashMap,把他和List搞混了），
      * 且需要当前元素个数大于扩容阈值才触发
@@ -110,7 +110,7 @@ public class ResultCache<K, V> {
         if (initCapacity > 0) {
             this.currentSize = 0;
             this.capacity = initCapacity;
-            this.realCapacity= (int) ((capacity+1)/DEFAULT_LOAD_FACTORY);
+            this.realCapacity = (int) ((capacity + 1) / DEFAULT_LOAD_FACTORY);
             this.caches = new HashMap<>(realCapacity);
         } else {
             throw new RuntimeException("init ResponseCaches failed: initCapacity<=0" + initCapacity);
@@ -121,7 +121,7 @@ public class ResultCache<K, V> {
     public ResultCache() {
         this.currentSize = 0;
         this.capacity = DEFAULT_INITIAL_CAPACITY;
-        this.realCapacity= (int) ((capacity+1)/DEFAULT_LOAD_FACTORY);
+        this.realCapacity = (int) ((capacity + 1) / DEFAULT_LOAD_FACTORY);
         this.caches = new HashMap<>(realCapacity);
     }
 
@@ -185,19 +185,12 @@ public class ResultCache<K, V> {
             if (node == null) {
                 log.debug("该请求的响应缓存不存在，调用线程执行任务");
                 try {
-                    if(task==null){
+                    if (task == null) {
                         throw new RuntimeException("Callable task is null");
                     }
-                    Future<V> future=pool.submit(task);
-                    //循环等待线程执行完成
-                    boolean flag=true;
-                    while(flag){
-                        if(future.isDone()&&!future.isCancelled()){
-                            node = new Node<>(key, future.get());
-                            put(key, node);
-                            flag=false;
-                        }
-                    }
+                    Future<V> future = pool.submit(task);
+                    node = new Node<>(key, future.get());
+                    put(key, node);
                 } catch (ExecutionException | InterruptedException e) {
                     log.error(e.getMessage());
                     remove(key);
@@ -218,7 +211,7 @@ public class ResultCache<K, V> {
                 log.error(e.getMessage());
             }
         } finally {
-            this.task=null;
+            this.task = null;
             lock.unlock();
         }
         return null;
@@ -324,8 +317,8 @@ public class ResultCache<K, V> {
         return realCapacity;
     }
 
-    public int getHashMapThreshold(){
-        return (int)(realCapacity*DEFAULT_LOAD_FACTORY);
+    public int getHashMapThreshold() {
+        return (int) (realCapacity * DEFAULT_LOAD_FACTORY);
     }
 
 }
