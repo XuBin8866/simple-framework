@@ -180,7 +180,7 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
             logger.error(e.getMessage());
             throw new RuntimeException(e);
         } finally {
-            dataSource.returnConnection(conn);
+            dataSource.returnConnection(conn,this.getClass().getName()+".loadTableInfo");
         }
     }
 

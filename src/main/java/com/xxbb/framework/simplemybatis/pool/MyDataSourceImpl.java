@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.LinkedList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 数据库连接池
@@ -45,6 +47,14 @@ public class MyDataSourceImpl implements MyDataSource {
      */
     private static int increasingCount = 2;
     /**
+     * 获取连接的最大等待时间
+     */
+    private static int maxWaitingTime = 5000;
+    /**
+     * 空闲连接的最大存活时间
+     */
+    private static int maxIdleTime = 20000;
+    /**
      * 存储配置文件信息
      */
     private static Configuration configuration;
@@ -60,6 +70,10 @@ public class MyDataSourceImpl implements MyDataSource {
      * 日志管理器
      */
     private static final Logger LOGGER = LogUtils.getLogger();
+    /**
+     * 归还连接的线程池
+     */
+    private ExecutorService returnConnectionThreadPool = Executors.newFixedThreadPool(maxCount);
 
     //属性初始化
     static {
@@ -87,6 +101,16 @@ public class MyDataSourceImpl implements MyDataSource {
             increasingCount = Integer.parseInt(Configuration.getProperty(Constant.JDBC_INCREASING_COUNT));
         } catch (Exception e) {
             LOGGER.debug("increasingCount使用默认值：" + increasingCount);
+        }
+        try {
+            maxWaitingTime = Integer.parseInt(Configuration.getProperty(Constant.JDBC_MAX_WAITING_TIME));
+        } catch (Exception e) {
+            LOGGER.debug(" maxWaitingTime使用默认值：" + maxWaitingTime);
+        }
+        try {
+            maxIdleTime = Integer.parseInt(Configuration.getProperty(Constant.JDBC_MAX_IDLE_TIME));
+        } catch (Exception e) {
+            LOGGER.debug(" maxIdleTime使用默认值：" + maxIdleTime);
         }
 
     }
@@ -174,19 +198,23 @@ public class MyDataSourceImpl implements MyDataSource {
     /**
      * 自动减少连接
      */
-    private synchronized void autoReduce() {
-        if (createdCount > minCount && conns.size() > 0) {
-            //关闭池中空闲连接
-            try {
-                conns.removeFirst().close();
-                createdCount--;
-                LOGGER.debug("已关闭多余空闲连接。当前已创建连接数：" + createdCount + "  当前空闲连接数：" + conns.size());
-            } catch (SQLException e) {
-                e.printStackTrace();
+    private void autoReduce(Connection conn) {
+        synchronized (MONITOR) {
+            if (createdCount > minCount && conns.contains(conn)) {
+                //关闭池中空闲连接
+                try {
+                    conns.remove(conn);
+                    conn.close();
+                    createdCount--;
+                    LOGGER.debug("已关闭多余空闲连接。当前已创建连接数：" + createdCount + "  当前空闲连接数：" + conns.size());
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                LOGGER.debug("所归还连接"+conn+ "保留在到连接池中或已被使用。当前已创建连接数量：" + createdCount + "  当前空闲连接数" + conns.size());
             }
-        } else {
-            LOGGER.debug("空闲连接保留在到连接池中或已被使用。当前已创建连接数量：" + createdCount + "  当前空闲连接数" + conns.size());
         }
+
     }
 
     /**
@@ -199,8 +227,8 @@ public class MyDataSourceImpl implements MyDataSource {
         //判断池中是否还有连接
         synchronized (MONITOR) {
             if (conns.size() > 0) {
-                LOGGER.debug("获取到连接：" + conns.getLast() + "  当前已创建连接数量：" + createdCount + "  当前空闲连接数" + (conns.size() - 1));
-                return conns.removeLast();
+                LOGGER.debug("获取到连接：" + conns.peek() + "  当前已创建连接数量：" + createdCount + "  当前空闲连接数" + (conns.size() - 1));
+                return conns.poll();
             }
             //如果没有空连接，则调用自动增长方法
             if (createdCount < maxCount) {
@@ -210,11 +238,11 @@ public class MyDataSourceImpl implements MyDataSource {
             //如果连接池连接数量达到上限,则等待连接归还
             LOGGER.debug("连接池中连接已用尽，请等待连接归还");
             try {
-                MONITOR.wait();
+                MONITOR.wait(maxWaitingTime);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            return getConnection();
+            return conns.size() > 0 ? getConnection() : null;
         }
 
     }
@@ -227,12 +255,24 @@ public class MyDataSourceImpl implements MyDataSource {
 
     @Override
     public void returnConnection(Connection conn) {
+        returnConnection(conn,"");
+    }
 
+    @Override
+    public void returnConnection(Connection conn,String message) {
         synchronized (MONITOR) {
-            LOGGER.debug("准备归还数据库连接" + conn);
-            conns.add(conn);
+            LOGGER.debug(message+"：准备归还数据库连接" + conn);
+            conns.offer(conn);
             MONITOR.notify();
-            autoReduce();
+            Runnable closeConnectionTask = () -> {
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                autoReduce(conn);
+            };
+            returnConnectionThreadPool.execute(closeConnectionTask);
         }
     }
 
@@ -259,13 +299,13 @@ public class MyDataSourceImpl implements MyDataSource {
     /**
      * 关闭连接池
      */
-    public void close(){
+    public void close() {
         LogUtils.getLogger().debug("正在关闭数据库连接池");
-        for(Connection conn:conns){
+        for (Connection conn : conns) {
             try {
                 conn.close();
             } catch (SQLException throwables) {
-                LogUtils.getLogger().debug("关闭连接出错：{}",throwables.getMessage());
+                LogUtils.getLogger().debug("关闭连接出错：{}", throwables.getMessage());
                 throwables.printStackTrace();
             }
         }

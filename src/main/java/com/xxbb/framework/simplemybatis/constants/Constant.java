@@ -56,7 +56,14 @@ public interface Constant {
      * 连接增长步长
      */
     String JDBC_INCREASING_COUNT = "jdbc.increasingCount";
-
+    /**
+     * 获取连接的最大等待时间
+     */
+    String JDBC_MAX_WAITING_TIME="jdbc.maxWaitingTime";
+    /**
+     * 空闲连接的最大存活时间
+     */
+    String JDBC_MAX_IDLE_TIME="jdbc.maxIdleTime";
 
     //mapper文件的标签的信息
     /**

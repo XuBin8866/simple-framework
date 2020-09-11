@@ -47,6 +47,9 @@ public class SimpleExecutor implements Executor {
         dataSource = configuration.getDataSource();
         try {
             connection=dataSource.getConnection();
+            if(connection==null){
+                throw  new RuntimeException("连接获取失败，请重试");
+            }
         } catch (SQLException e) {
             LOGGER.error(e.getLocalizedMessage());
             throw new RuntimeException(e);

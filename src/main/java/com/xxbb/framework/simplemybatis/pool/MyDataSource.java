@@ -24,6 +24,12 @@ public interface MyDataSource extends DataSource {
     void returnConnection(Connection conn);
 
     /**
+     * 有描述参数的归还连接
+     * @param conn 连接
+     * @param message 描述参数
+     */
+    void returnConnection(Connection conn,String message);
+    /**
      * 获取空闲连接数
      *
      * @return 空闲连接数
