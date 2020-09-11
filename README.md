@@ -32,7 +32,7 @@ po.location=com.xxbb.demo.domain
 catalog=db_orm
 ####数据连接参数
 jdbc.driver=com.mysql.cj.jdbc.Driver
-jdbc.url=jdbc:mysql://localhost:3306/db_orm?useSSL=false&serverTimezone=UTC&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+jdbc.url=jdbc:mysql://localhost:3306/db_orm?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8&allowPublicKeyRetrieval=true
 jdbc.username=root
 jdbc.password=123456
 #初始化连接池个数
@@ -43,6 +43,10 @@ jdbc.minCount=8
 jdbc.maxCount=20
 #连接池增长步长
 jdbc.increasingCount=2
+#获取连接的最大等待时间
+jdbc.maxWaitingTime=5000
+#空闲连接的最大存活时间
+jdbc.maxIdleTime=10000
 ```
 
 log4j.properties日志配置参考：
