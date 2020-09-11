@@ -79,7 +79,29 @@ log4j.appender.E.layout.ConversionPattern = %-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] 
 #### **仿MyBatis的ORM框架使用方式**
 数据库操作默认是关闭自动提交，可以使用<code>SqlSession::setAutocommit(boolean flag)</code>开启自动提交，默认值为false（关闭自动提交）。在自动提交关闭的状态下必须使用<code>SqlSession::commit()</code>方法手动提交事务。在数据库操作完成后需要调用<code>SqlSession::close()</code>方法释放session持有的数据库连接对象回连接池。
 ###### 1.获取接口代理对象读取mapper.xml文件的方式
-mapper文件和mapper接口必须同名对应
+mapper文件和mapper接口建议同名相互映射，查询语句中需要指明结果集要封装的po类全限定名，该类必须和所查询的数据库的表对应
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper namespace="com.xxbb.demo.mapper.UserMapper">
+
+    <select id="getUser" resultType="com.xxbb.demo.domain.User">
+        select * from t_user where id = #{id}
+    </select>
+
+    <select id="getAll" resultType="com.xxbb.demo.domain.User">
+        select * from t_user
+    </select>
+    <insert id="insertUser">
+        insert into t_user(id,username,password,if_freeze) values(#{id},#{username},#{password},#{ifFreeze})
+    </insert>
+    <update id="updateUser">
+        update t_user set username =#{username} where id = #{}
+    </update>
+    <delete id="deleteUser">
+        delete from t_user where id=#{id}
+    </delete>
+</mapper>
+```
 ```java
 public void sqlTestMain() {
         //构建sql工厂
