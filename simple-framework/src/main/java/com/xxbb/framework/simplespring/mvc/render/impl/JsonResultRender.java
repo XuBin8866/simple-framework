@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.xxbb.framework.simplespring.mvc.RequestProcessorChain;
 import com.xxbb.framework.simplespring.mvc.render.ResultRender;
 
-
 import java.io.PrintWriter;
 
 /**

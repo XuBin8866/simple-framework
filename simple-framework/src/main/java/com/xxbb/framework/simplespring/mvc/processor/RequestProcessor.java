@@ -10,9 +10,9 @@ import com.xxbb.framework.simplespring.mvc.RequestProcessorChain;
 public interface RequestProcessor {
     /**
      * 处理请求
-     * @param requestProcessorChain
-     * @return
-     * @throws Exception
+     * @param requestProcessorChain 请求处理器
+     * @return 是否能够处理该请求
+     * @throws Exception 异常
      */
     boolean process(RequestProcessorChain requestProcessorChain) throws Exception;
 }

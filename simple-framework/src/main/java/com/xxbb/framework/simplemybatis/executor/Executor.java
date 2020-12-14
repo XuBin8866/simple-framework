@@ -4,7 +4,6 @@ package com.xxbb.framework.simplemybatis.executor;
 
 import com.xxbb.framework.simplemybatis.mapping.MappedStatement;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**

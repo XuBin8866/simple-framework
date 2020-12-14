@@ -28,7 +28,7 @@ public interface MyDataSource extends DataSource {
      * @param conn 连接
      * @param message 描述参数
      */
-    void returnConnection(Connection conn,String message);
+    void returnConnection(Connection conn, String message);
     /**
      * 获取空闲连接数
      *

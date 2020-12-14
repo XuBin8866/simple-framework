@@ -1,4 +1,4 @@
-package com.xxbb.framework.simplespring.util;
+package com.xxbb.framework.simplemybatis.utils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
  *
  * @author xxbb
  */
-public class StringUtil {
+public class StringUtils {
     /**
      * 正则表达式 用于匹配下划线
      */
@@ -29,7 +29,7 @@ public class StringUtil {
         if ("t_".equals(str.substring(0, 2))) {
             return firstCharToUpperCase(lineToHump(str.substring(2)));
         } else {
-            return lineToHump(str);
+            return firstCharToUpperCase(lineToHump(str));
         }
 
     }
@@ -52,21 +52,7 @@ public class StringUtil {
      * @return 首字母大写的字符串
      */
     public static String firstCharToUpperCase(String str) {
-        char[] chars=str.toCharArray();
-        chars[0]-=32;
-        return String.valueOf(chars);
-    }
-    /**
-     * 将传入字符串的首字母大写
-     *
-     * @param str 传入字符串
-     * @return 首字母大写的字符串
-     */
-    public static String firstCharToLowerCase(String str) {
-        char[] chars=str.toCharArray();
-        chars[0]+=32;
-        return String.valueOf(chars);
-
+        return str.toUpperCase().charAt(0) + str.substring(1);
     }
 
     /**
@@ -128,4 +114,5 @@ public class StringUtil {
     public static String stringTrim(String src) {
         return (null != src) ? src.trim() : null;
     }
+
 }

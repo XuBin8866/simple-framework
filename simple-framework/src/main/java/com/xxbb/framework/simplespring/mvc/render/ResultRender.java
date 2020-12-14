@@ -10,8 +10,8 @@ import com.xxbb.framework.simplespring.mvc.RequestProcessorChain;
 public interface ResultRender {
     /**
      * 执行渲染
-     * @param requestProcessorChain
-     * @throws Exception
+     * @param requestProcessorChain 结果渲染器
+     * @throws Exception 异常
      */
      void render(RequestProcessorChain requestProcessorChain) throws Exception;
 }

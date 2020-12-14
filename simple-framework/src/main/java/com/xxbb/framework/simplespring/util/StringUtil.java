@@ -1,4 +1,4 @@
-package com.xxbb.framework.simplemybatis.utils;
+package com.xxbb.framework.simplespring.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
  *
  * @author xxbb
  */
-public class StringUtils {
+public class StringUtil {
     /**
      * 正则表达式 用于匹配下划线
      */
@@ -29,7 +29,7 @@ public class StringUtils {
         if ("t_".equals(str.substring(0, 2))) {
             return firstCharToUpperCase(lineToHump(str.substring(2)));
         } else {
-            return firstCharToUpperCase(lineToHump(str));
+            return lineToHump(str);
         }
 
     }
@@ -52,7 +52,21 @@ public class StringUtils {
      * @return 首字母大写的字符串
      */
     public static String firstCharToUpperCase(String str) {
-        return str.toUpperCase().substring(0, 1) + str.substring(1);
+        char[] chars=str.toCharArray();
+        chars[0]-=32;
+        return String.valueOf(chars);
+    }
+    /**
+     * 将传入字符串的首字母大写
+     *
+     * @param str 传入字符串
+     * @return 首字母大写的字符串
+     */
+    public static String firstCharToLowerCase(String str) {
+        char[] chars=str.toCharArray();
+        chars[0]+=32;
+        return String.valueOf(chars);
+
     }
 
     /**
@@ -115,4 +129,27 @@ public class StringUtils {
         return (null != src) ? src.trim() : null;
     }
 
+    /**
+     * 删除配置文件名前的classpath:前缀
+     * @param str 配置文件名
+     * @return 修改后的字符串
+     */
+    public static String hasPrefixClassPathAndDelete(String str){
+        if(hasPrefixClassPath(str)){
+            return str.substring(10);
+        }
+        return str;
+    }
+
+    /**
+     * 判断配置文件名是否带有classpath：前缀
+     * @Description 在Web.xml中配置读取的配置文件参数<param-value></param-value>，如properties时
+     * 如果不加上classpath：前缀会使得该行在IDEA编译器的检查中标下划线，
+     * 但对程序的运行是没有影响的。
+     * @param str 配置文件名
+     * @return true/false
+     */
+    private static boolean hasPrefixClassPath(String str){
+        return str.startsWith("classpath:");
+    }
 }

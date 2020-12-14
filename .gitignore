@@ -1,9 +1,2 @@
-/demo/src/main/webapp/api/
-/demo/src/main/webapp/css/
-/demo/src/main/webapp/images/
-/demo/src/main/webapp/js/
-/demo/src/main/webapp/page/
-/demo/src/main/webapp/lib/
-/demo/src/main/webapp/static/
-/web
-/web/target/xxbb-framework/WEB-INF/classes/com/xxbb/demo/aspect/
+/demo/target
+/simple-framework/target

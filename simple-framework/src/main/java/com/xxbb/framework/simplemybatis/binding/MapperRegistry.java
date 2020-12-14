@@ -25,7 +25,7 @@ public class MapperRegistry {
      * @param <T>  接口类泛型
      */
     public <T> void addMapper(Class<T> type) {
-        this.knownMappers.put(type, new MapperProxyFactory<T>(type));
+        this.knownMappers.put(type, new MapperProxyFactory<>(type));
     }
 
     /**

@@ -12,6 +12,7 @@ import com.xxbb.framework.simplespring.mvc.processor.impl.JspRequestProcessor;
 import com.xxbb.framework.simplespring.mvc.processor.impl.PreRequestProcessor;
 import com.xxbb.framework.simplespring.mvc.processor.impl.StaticResourceRequestProcessor;
 import com.xxbb.framework.simplespring.util.LogUtil;
+import com.xxbb.framework.simplespring.util.StringUtil;
 import org.slf4j.Logger;
 
 import javax.servlet.ServletConfig;
@@ -33,9 +34,9 @@ import java.util.Properties;
 /**
  * @author xxbb
  */
-@WebServlet(name="DispatcherServlet" ,urlPatterns="/*",
-initParams ={@WebInitParam(name="contextConfigLocation",value = "application.properties")},
-loadOnStartup = 1)
+//@WebServlet(name="DispatcherServlet" ,urlPatterns="/*",
+//initParams ={@WebInitParam(name="contextConfigLocation",value = "application.properties")},
+//loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
     /**
      * 保存application.properties配置文件中的内容
@@ -53,15 +54,16 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     public void init(ServletConfig servletConfig) {
         //读取配置文件
-        doLoadConfig(servletConfig.getInitParameter("contextConfigLocation"));
+        String contextConfigLocation=StringUtil.hasPrefixClassPathAndDelete(servletConfig.getInitParameter("contextConfigLocation"));
+        doLoadConfig(contextConfigLocation);
         //初始化容器
         BeanContainer beanContainer = BeanContainer.getInstance();
         beanContainer.loadBeans(contextCofig.getProperty("scanPackage"));
-        System.out.println();
         //AOP织入
         new AspectWeaver().doAspectOrientedProgramming();
         //初始化简易mybatis框架，往IoC容器中注入SqlSessionFactory对象
-        new SqlSessionFactoryBuilder().build(servletConfig.getInitParameter("contextConfigLocation"));
+        new SqlSessionFactoryBuilder().build(
+                contextConfigLocation);
         //依赖注入
         new DependencyInject().doDependencyInject();
 
@@ -95,9 +97,10 @@ public class DispatcherServlet extends HttpServlet {
         InputStream is=null;
         try {
             is = this.getClass().getClassLoader().getResourceAsStream(contextConfigLocation);
+            assert is!=null;
             contextCofig.load(is);
         } catch (IOException e) {
-            LogUtil.getLogger().error(e.getMessage());
+            LogUtil.getLogger().error("read contextConfigLocation fail,{}",e.getMessage());
             throw new RuntimeException(e);
         } finally {
             if (null != is) {
@@ -105,6 +108,7 @@ public class DispatcherServlet extends HttpServlet {
                     is.close();
                 } catch (IOException e) {
                     e.printStackTrace();
+                    LogUtil.getLogger().error(e.getMessage());
                 }
             }
         }

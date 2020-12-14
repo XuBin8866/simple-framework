@@ -5,8 +5,6 @@ import com.xxbb.framework.simplemybatis.bean.TableInfo;
 import com.xxbb.framework.simplemybatis.executor.statement.StatementHandler;
 import com.xxbb.framework.simplemybatis.mapping.MappedStatement;
 
-
-
 import javax.security.auth.callback.Callback;
 import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
