@@ -1,18 +1,84 @@
 package com.xxbb.demo;
 
+import com.xxbb.demo.circular.C;
 import com.xxbb.demo.mapper.UserMapper;
 import com.xxbb.demo.domain.User;
+import com.xxbb.demo.circular.A;
+import com.xxbb.demo.circular.B;
+import com.xxbb.demo.service.HelloService;
+import com.xxbb.demo.service.UserService;
 import com.xxbb.framework.simplemybatis.session.SqlSession;
 import com.xxbb.framework.simplemybatis.session.SqlSessionFactory;
 import com.xxbb.framework.simplemybatis.session.SqlSessionFactoryBuilder;
+import com.xxbb.framework.simplespring.aop.AspectWeaver;
 import com.xxbb.framework.simplespring.core.BeanContainer;
+import com.xxbb.framework.simplespring.inject.DependencyInject;
+import com.xxbb.framework.simplespring.util.LogUtil;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 /**
  * @author xxbb
  */
 
 public class TestMain {
+    /**
+     * IoC和DI需要组合使用，如果使用了AOP需要在DI前进行织入,
+     * 同时得益于IoC和DI的操作是串行进行的，不会出现循环依赖的情况
+     * ORM框架可直接使用，在创建使用ORM的入口对象SqlSessionFactory时也会将该对象存入IoC容器
+     * 但如果Bean对象依赖SqlSessionFactory,则需要将ORM框架的初始化放在DI之前
+     */
+    @Test
+    public void baseFunctionTest(){
+        //初始化IoC容器
+        BeanContainer beanContainer = BeanContainer.getInstance();
+        //指定需要扫描的包，加载bean对象进入IoC容器
+        beanContainer.loadBeans("com.xxbb.demo");
+        //如果使用了AOP的功能需要先于DI进行织入
+        new AspectWeaver().doAspectOrientedProgramming();
+        //ORM框架初始化不受以上流程顺序影响，但如果有Bean依赖factory对象则需要先于DI初始化
+        SqlSessionFactory factory=new SqlSessionFactoryBuilder().build("application.properties");
+        //依赖注入
+        new DependencyInject().doDependencyInject();
+
+        //测试基础功能
+        HelloService helloService= (HelloService) beanContainer.getBean(HelloService.class);
+        helloService.hello();
+
+        //测试ORM框架功能
+        System.out.println(factory.openSession());
+        UserService userService= (UserService) beanContainer.getBean(UserService.class);
+        userService.select();
+    }
+
+    /**
+     * 循环依赖测试
+     */
+    @Test
+    public void circularDependencyTest(){
+        //初始化IoC容器
+        BeanContainer beanContainer = BeanContainer.getInstance();
+        //指定需要扫描的包，加载bean对象进入IoC容器
+        beanContainer.loadBeans("com.xxbb.demo.circular");
+        //依赖注入
+        new DependencyInject().doDependencyInject();
+
+        //测试循环依赖
+        A a= (A) beanContainer.getBean(A.class);
+        a.showField();
+        B b= (B) beanContainer.getBean(B.class);
+        b.showField();
+        C c= (C) beanContainer.getBean(C.class);
+        c.showField();
+    }
+    /**
+     * 日志测试
+     */
+    @Test
+    public void logTest(){
+        Logger logger= LogUtil.getLogger();
+        logger.info("log test");
+    }
 
     @Test
     public void IocTest(){
