@@ -169,26 +169,197 @@ IoC、AOP、DI功能和ORM框架可以独立使用，参考如下：
     }
 ```
 
-**注意：由于ORM框架涉及到实体类与数据库表的字段映射，所以在使用ORM框架之前需要先在工程中创建与数据库表及表中字段对应的实体类，其中实体类名和数据库表名存在驼峰与下划线的映射关系，允许数据库表名前加上<code>t_</code>前缀。如实体类<code>GoodsType</code>可对应数据库表<code>goods_type</code>或<code>t_goods_type</code>。实体类属性则需要与数据库字段严格安装驼峰与下划线的映射关系。**
+**注意：**
+
+######  ORM功能
+
+由于ORM框架涉及到实体类与数据库表的字段映射，所以在使用ORM框架之前需要先在工程中创建与数据库表及表中字段对应的实体类，其中实体类名和数据库表名存在驼峰与下划线的映射关系，允许数据库表名前加上<code>t_</code>前缀。如实体类<code>GoodsType</code>可对应数据库表<code>goods_type</code>或<code>t_goods_type</code>。实体类属性则需要与数据库字段严格安装驼峰与下划线的映射关系。
+
+数据库操作默认是关闭自动提交，可以使用 <code>SqlSession::setAutocommit (boolean flag)</code > 开启自动提交，默认值为 false（关闭自动提交）。在自动提交关闭的状态下必须使用 <code>SqlSession::commit ()</code> 方法手动提交事务，事务抛出异常通过<code>SqlSession::rollback ()</code>进行回滚。在数据库操作完成后需要调用 <code>SqlSession::close ()</code> 方法释放 session 持有的数据库连接对象回连接池。
+
+ORM提供了两种对数据库的操作方式
+
+**1.获取接口代理对象读取 mapper.xml 文件**
+
+mapper 文件和 mapper 接口建议同名相互映射，注意 xml 中 namespace 与 mapper 接口的映射关系。查询语句中需要指明结果集要封装的 po 类全限定名，该类必须和所查询的数据库的表对应
+
+UserMapper.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper namespace="com.xxbb.demo.mapper.UserMapper">
+
+    <select id="getUser" resultType="com.xxbb.demo.domain.User">
+        select * from t_user where id = #{id}
+    </select>
+
+    <select id="getAll" resultType="com.xxbb.demo.domain.User">
+        select * from t_user
+    </select>
+    <insert id="insertUser">
+        insert into t_user(id,username,password,if_freeze) values(#{id},#{username},#{password},#{ifFreeze})
+    </insert>
+    <update id="updateUser">
+        update t_user set username =#{username} where id = #{}
+    </update>
+    <delete id="deleteUser">
+        delete from t_user where id=#{id}
+    </delete>
+</mapper>
+```
+
+UserMapper.java
+
+```java
+
+package com.xxbb.demo.mapper;
+
+
+import com.xxbb.demo.domain.User;
+
+import java.util.List;
+
+
+/**
+ * UserMapper.java
+ *
+ * @author PLF
+ * @date 2019年3月6日
+ */
+public interface UserMapper {
+
+    /**
+     * 获取单个user
+     *
+     * @param id id
+     * @return user
+     */
+    User getUser(String id);
+
+    /**
+     * 获取所有用户
+     *
+     * @return users
+     */
+    List<User> getAll();
+
+    /**
+     * 更新用户
+     *
+     * @param name name
+     * @param id   id
+     * @return 受影响的行数
+     */
+    int updateUser(String name, Integer id);
+
+    /**
+     * 添加
+     *
+     * @param id       id
+     * @param username username
+     * @param password password
+     * @param ifFreeze if_freeze
+     * @return 受影响的行数
+     */
+    int insertUser(Integer id, String username, String password, Integer ifFreeze);
+
+    /**
+     * 删除用户
+     *
+     * @param id id
+     * @return 受影响的行数
+     */
+    int deleteUser(Integer id);
+}
+```
+
+使用方式参考：
+
+```java
+    public void sqlTestMain() {
+        //构建sql工厂
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
+        SqlSession session = factory.openSession();
+        try {
+            UserMapper userMapper = session.getMapper(UserMapper.class);
+            System.out.println("testMain.select：" + userMapper.getAll());
+            System.out.println("testMain.update：" + userMapper.updateUser("xxbb", 1));
+            System.out.println("testMain.insert:" + userMapper.insertUser(24, "zzxx", "123456", 1));
+            System.out.println("testMain.delete: " + userMapper.deleteUser(24));
+            session.commit();
+        } catch (Exception e) {
+            LogUtil.getLogger().error("sql test error:{}", e.getMessage());
+            session.rollback();
+        } finally {
+            session.close();
+        }
+    }
+```
+
+**2.以面向对象的方式**
+
+只适用于增删改操作，且修改和删除语句的检索条件是主键，无法进行范围性的修改和删除。如果数据库表没有主键则无法进行修改和删除操作。如果传入对象对应主键的成员变量值为空则无法修改数据，即受影响的行数为 0。
+
+```java
+	 public void testUpdate() {
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
+        SqlSession session = factory.openSession();
+        User u = new User();
+        u.setId(1);
+        u.setUsername("xxbb");
+        try {
+            System.out.println("testUpdate：" + session.update(u));
+            session.commit(); 
+        } catch (Exception e) {
+            session.rollback();
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+    }
+    
+    public void testInsert() {
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
+        SqlSession session = factory.openSession();
+        User u = new User();
+        u.setId(24);
+        u.setUsername("zzxx");
+        u.setPassword("123456");
+        u.setIfFreeze(1);
+        try {
+            System.out.println("testInsert：" + session.insert(u));
+            session.commit();
+            
+        } catch (Exception e) {
+            session.rollback();
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+    }
+    
+    public void testDelete() {
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
+        SqlSession session = factory.openSession();
+        User u = new User();
+        u.setId(24);
+        try {
+            System.out.println("testDelete:" + session.delete(u));
+            session.commit();
+        } catch (Exception e) {
+            session.rollback();
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+    }
+```
+
+
 
 ###### Web功能
 
-在<code>web.xml</code>中配置前端控制器和配置文件路径
+配置<code>web.xml</code>,使用该框架的 MVC 功能需要指定该框架的 DispatcherServlet 对请求进行拦截，之后的使用方式和Spring框架的使用方式类似。
 
-```xml
-    <servlet>
-        <servlet-name>DispatcherServlet</servlet-name>
-        <servlet-class>com.xxbb.framework.simplespring.mvc.DispatcherServlet</servlet-class>
-        <init-param>
-            <param-name>contextConfigLocation</param-name>
-            <!--配置文件名，加不加classpath都不影响配置解析，但是不加在IDEA中这一行会飘红-->
-            <param-value>classpath:application.properties</param-value>
-        </init-param>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>DispatcherServlet</servlet-name>
-        <url-pattern>/*</url-pattern>
-    </servlet-mapping>
-```
+项目具体的功能和业务逻辑介绍参考[>> 自实现简易SSM框架](https://github.com/XuBin8866/my-docs/blob/main/simple-framework-docs/%E8%87%AA%E5%AE%9E%E7%8E%B0%E7%AE%80%E6%98%93SSM%E6%A1%86%E6%9E%B6.md)、[>> 自实现简易MyBatis框架](https://github.com/XuBin8866/my-docs/blob/main/simple-framework-docs/%E8%87%AA%E5%AE%9E%E7%8E%B0%E7%AE%80%E6%98%93MyBatis%E6%A1%86%E6%9E%B6.md)
 
-项目具体的功能和业务逻辑介绍参考[自实现简易SSM框架](https://github.com/XuBin8866/my-docs/blob/main/simple-framework-docs/%E8%87%AA%E5%AE%9E%E7%8E%B0%E7%AE%80%E6%98%93SSM%E6%A1%86%E6%9E%B6.md)、[自实现简易MyBatis框架](https://github.com/XuBin8866/my-docs/blob/main/simple-framework-docs/%E8%87%AA%E5%AE%9E%E7%8E%B0%E7%AE%80%E6%98%93MyBatis%E6%A1%86%E6%9E%B6.md)

@@ -29,7 +29,7 @@ public class TestMain {
      * 但如果Bean对象依赖SqlSessionFactory,则需要将ORM框架的初始化放在DI之前
      */
     @Test
-    public void baseFunctionTest(){
+    public void baseFunctionTest() {
         //初始化IoC容器
         BeanContainer beanContainer = BeanContainer.getInstance();
         //指定需要扫描的包，加载bean对象进入IoC容器
@@ -37,17 +37,17 @@ public class TestMain {
         //如果使用了AOP的功能需要先于DI进行织入
         new AspectWeaver().doAspectOrientedProgramming();
         //ORM框架初始化不受以上流程顺序影响，但如果有Bean依赖factory对象则需要先于DI初始化
-        SqlSessionFactory factory=new SqlSessionFactoryBuilder().build("application.properties");
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
         //依赖注入
         new DependencyInject().doDependencyInject();
 
         //测试基础功能
-        HelloService helloService= (HelloService) beanContainer.getBean(HelloService.class);
+        HelloService helloService = (HelloService) beanContainer.getBean(HelloService.class);
         helloService.hello();
 
         //测试ORM框架功能
         System.out.println(factory.openSession());
-        UserService userService= (UserService) beanContainer.getBean(UserService.class);
+        UserService userService = (UserService) beanContainer.getBean(UserService.class);
         userService.select();
     }
 
@@ -55,7 +55,7 @@ public class TestMain {
      * 循环依赖测试
      */
     @Test
-    public void circularDependencyTest(){
+    public void circularDependencyTest() {
         //初始化IoC容器
         BeanContainer beanContainer = BeanContainer.getInstance();
         //指定需要扫描的包，加载bean对象进入IoC容器
@@ -64,36 +64,39 @@ public class TestMain {
         new DependencyInject().doDependencyInject();
 
         //测试循环依赖
-        A a= (A) beanContainer.getBean(A.class);
+        A a = (A) beanContainer.getBean(A.class);
         a.showField();
-        B b= (B) beanContainer.getBean(B.class);
+        B b = (B) beanContainer.getBean(B.class);
         b.showField();
-        C c= (C) beanContainer.getBean(C.class);
+        C c = (C) beanContainer.getBean(C.class);
         c.showField();
     }
+
     /**
      * 日志测试
      */
     @Test
-    public void logTest(){
-        Logger logger= LogUtil.getLogger();
+    public void logTest() {
+        Logger logger = LogUtil.getLogger();
         logger.info("log test");
     }
 
     @Test
-    public void IocTest(){
+    public void IocTest() {
         SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
-        BeanContainer beanContainer=BeanContainer.getInstance();
-        beanContainer.addBean(factory.getClass(),factory);
+        BeanContainer beanContainer = BeanContainer.getInstance();
+        beanContainer.addBean(factory.getClass(), factory);
         System.out.println(beanContainer.getClassesBySuper(SqlSessionFactory.class));
     }
+
     @Test
-    public void classTest(){
+    public void classTest() {
         SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
         System.out.println(factory.getClass());
     }
+
     @Test
-    public void sqlTest(){
+    public void sqlTest() {
         //读取mapper文件的CRUD测试
         sqlTestMain();
         //自动生成增删改语句并执行的测试
@@ -101,17 +104,25 @@ public class TestMain {
 //        testInsert();
 //        testDelete();
     }
+    @Test
     public void testUpdate() {
         SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
         SqlSession session = factory.openSession();
         User u = new User();
         u.setId(1);
         u.setUsername("xxbb");
-        System.out.println("testUpdate：" + session.update(u));
-        session.commit();
-        session.close();
-    }
+        try {
+            System.out.println("testUpdate：" + session.update(u));
+            session.commit();
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.rollback();
+        } finally {
+            session.close();
+        }
+    }
+    @Test
     public void testInsert() {
         SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
         SqlSession session = factory.openSession();
@@ -120,31 +131,51 @@ public class TestMain {
         u.setUsername("zzxx");
         u.setPassword("123456");
         u.setIfFreeze(1);
-        System.out.println("testInsert：" + session.insert(u));
-        session.commit();
-        session.close();
-    }
+        try {
+            System.out.println("testInsert：" + session.insert(u));
+            session.commit();
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.rollback();
+        } finally {
+            session.close();
+        }
+    }
+    @Test
     public void testDelete() {
         SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
         SqlSession session = factory.openSession();
         User u = new User();
         u.setId(24);
-        System.out.println("testDelete:" + session.delete(u));
-        session.commit();
-        session.close();
-    }
+        try {
+            System.out.println("testDelete:" + session.delete(u));
+            session.commit();
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.rollback();
+        } finally {
+            session.close();
+        }
+    }
+    @Test
     public void sqlTestMain() {
         //构建sql工厂
         SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
         SqlSession session = factory.openSession();
-        UserMapper userMapper = session.getMapper(UserMapper.class);
-        System.out.println("testMain.select：" + userMapper.getAll());
-        System.out.println("testMain.update：" + userMapper.updateUser("xxbb", 1));
-        System.out.println("testMain.insert:" + userMapper.insertUser(24, "zzxx", "123456", 1));
-        System.out.println("testMain.delete: " + userMapper.deleteUser(24));
-        session.commit();
-        session.close();
+        try {
+            UserMapper userMapper = session.getMapper(UserMapper.class);
+            System.out.println("testMain.select：" + userMapper.getAll());
+            System.out.println("testMain.update：" + userMapper.updateUser("xxbb", 1));
+            System.out.println("testMain.insert:" + userMapper.insertUser(24, "zzxx", "123456", 1));
+            System.out.println("testMain.delete: " + userMapper.deleteUser(24));
+            session.commit();
+        } catch (Exception e) {
+            LogUtil.getLogger().error("sql test error:{}", e.getMessage());
+            session.rollback();
+        } finally {
+            session.close();
+        }
     }
 }
