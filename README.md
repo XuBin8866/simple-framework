@@ -8,7 +8,6 @@
 
 下载[simple-framework-v1.0.0](https://github.com/XuBin8866/simple-framework/releases/tag/v1.0.0)并引入工程中。注意在IDEA2020.3版本中将jar包放在工程内的文件夹再从Project Structure引入后，IDEA会提示jar包不存在，但是编译没有问题，所以建议jar包放在工程文件夹外再进行引入。
 
-![image-20201218104237545](https://github.com/XuBin8866/my-docs/blob/main/images/image-20201218104237545.png)
 
 在Web工程中如果是直接配置的tomcat服务器进行启动还需要在项目的<code>WEB-INF/lib</code>路径下放入该jar包否则服务器会报404错误；如果是使用Maven的tomcat插件进行服务器的启动需要在Maven中设置编译该jar包，指定该jar包的路径，否则该jar包不会被编译打包。pom.xml中进行如下修改
 
