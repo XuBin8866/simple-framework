@@ -13,7 +13,7 @@
 在Web工程中如果是直接配置的tomcat服务器进行启动还需要在项目的<code>WEB-INF/lib</code>路径下放入该jar包否则服务器会报404错误；如果是使用Maven的tomcat插件进行服务器的启动需要在Maven中设置编译该jar包，指定该jar包的路径，否则该jar包不会被编译打包。pom.xml中进行如下修改
 
 ```xml
-			<plugin>
+	     <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>1.8</source>
@@ -26,6 +26,7 @@
                 </configuration>
                 <version>3.8.0</version>
             </plugin>
+
 ```
 
 ## 使用
