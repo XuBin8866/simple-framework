@@ -14,19 +14,20 @@
 
 
 ```xml
-			<plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <encoding>UTF-8</encoding>
-                    <compilerArguments>
-                        <!--指定jar包的路径-->
-                        <extdirs>${project.basedir}/src/main/resources/lib</extdirs>
-                    </compilerArguments>
-                </configuration>
-                <version>3.8.0</version>
-            </plugin>
+<plugin> 
+  <artifactId>maven-compiler-plugin</artifactId>  
+  <configuration> 
+    <source>1.8</source>  
+    <target>1.8</target>  
+    <encoding>UTF-8</encoding>  
+    <compilerArguments> 
+      <!--指定jar包的路径-->  
+      <extdirs>${project.basedir}/src/main/resources/lib</extdirs> 
+    </compilerArguments> 
+  </configuration>  
+  <version>3.8.0</version> 
+</plugin>
+			
 ```
 
 ## 使用
