@@ -26,8 +26,7 @@
     </compilerArguments> 
   </configuration>  
   <version>3.8.0</version> 
-</plugin>
-			
+</plugin>			
 ```
 
 ## 使用
