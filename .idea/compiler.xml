@@ -8,7 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="demo" />
         <module name="web" />
-        <module name="simple-framework" />
+        <module name="simple-framework (1)" />
       </profile>
     </annotationProcessing>
   </component>

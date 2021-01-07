@@ -3,6 +3,7 @@ package com.xxbb.demo.controller;
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
 
+import com.xxbb.demo.dao.UserDao;
 import com.xxbb.demo.domain.Account;
 import com.xxbb.demo.domain.User;
 import com.xxbb.demo.mapper.UserMapper;
@@ -37,6 +38,8 @@ public class HelloController {
     @Autowired
     SqlSessionFactory sqlSessionFactory;
 
+    @Autowired
+    UserDao userDao;
 
     @RequestMapping(value="/export",method = RequestMethod.GET)
     @ResponseBody
@@ -44,7 +47,7 @@ public class HelloController {
         System.out.println(response);
         SqlSession sqlSession = sqlSessionFactory.openSession();
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
-        List<User> list = mapper.getAll();
+        List<User> list = userDao.getAll();
         System.out.println(list.toString());
         Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("用户表","用户"),
                 User .class, list);

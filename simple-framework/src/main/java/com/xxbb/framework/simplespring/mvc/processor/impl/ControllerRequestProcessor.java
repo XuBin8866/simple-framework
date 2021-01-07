@@ -21,6 +21,7 @@ import com.xxbb.framework.simplespring.util.ValidationUtil;
 import org.slf4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -168,7 +169,7 @@ public class ControllerRequestProcessor implements RequestProcessor {
             //如果时查询请求则将结果存入缓存
             String cacheKey=path + "," + method+":"+requestParametersMapToString;
             log.debug("匹配到查询请求:{},使用缓存",cacheKey);
-            Callable<Object> task = () -> invokeControllerMethod(controllerMethod, requestProcessorChain.getReq());
+            Callable<Object> task = () -> invokeControllerMethod(controllerMethod, requestProcessorChain.getReq(),requestProcessorChain.getResp());
             resultCaches.setTask(task);
             result = resultCaches.get(cacheKey);
             log.debug("当前缓存数：{}",resultCaches.size());
@@ -176,10 +177,10 @@ public class ControllerRequestProcessor implements RequestProcessor {
             //如果有增删改请求则刷新缓存
             log.debug("匹配到修改请求：{}，刷新缓存",path);
             resultCaches.clear();
-            result = invokeControllerMethod(controllerMethod, requestProcessorChain.getReq());
+            result = invokeControllerMethod(controllerMethod, requestProcessorChain.getReq(),requestProcessorChain.getResp());
         } else {
             //其他情况则直接实现方法
-            result = invokeControllerMethod(controllerMethod, requestProcessorChain.getReq());
+            result = invokeControllerMethod(controllerMethod, requestProcessorChain.getReq(),requestProcessorChain.getResp());
         }
         //3.根据解析结果，选择对应的render进行渲染
         setResultRender(result, controllerMethod, requestProcessorChain);
@@ -213,7 +214,7 @@ public class ControllerRequestProcessor implements RequestProcessor {
      * @param req request请求
      * @return 结果
      */
-    private Object invokeControllerMethod(ControllerMethod controllerMethod, HttpServletRequest req) {
+    private Object invokeControllerMethod(ControllerMethod controllerMethod, HttpServletRequest req, HttpServletResponse resp) {
         //1.从请求里获取GET或者POST的参数名及其对应的值
         Map<String,String> requestParamMap=new HashMap<>(5);
         //GET，POST方法的请求参数获取方式
@@ -229,15 +230,31 @@ public class ControllerRequestProcessor implements RequestProcessor {
         List<Object> methodParams=new ArrayList<>();
         Map<String ,Class<?>> methodParamMap=controllerMethod.getMethodParameters();
         for(String paramName:methodParamMap.keySet()){
-            Class<?> type=methodParamMap.get(paramName);
-            String requestValue=requestParamMap.get(paramName);
-            //只支持String 以及基础类型char,int,short,byte,double,long,float,boolean,及它们的包装类型
             Object value;
-            if(null==requestValue){
-                //将请求里的参数值转成适配于参数类型的空值
-                value= ConverterUtil.primitiveNull(type);
-            }else{
-                value=ConverterUtil.convert(type,requestValue);
+            String mapParamName = "map";
+            String requestParamName = "request";
+            String responseParamName= "response";
+            //当参数名为map时,将parameterMap赋值给value
+            if (mapParamName.equals(paramName)) {
+                value = requestParamMap;
+            }
+            //当参数名为request时，将request赋值给value
+            else if (requestParamName.equals(paramName)) {
+                value = req;
+            }
+            else if(responseParamName.equals(paramName)){
+                value=resp;
+            }
+            else{
+                Class<?> type=methodParamMap.get(paramName);
+                String requestValue=requestParamMap.get(paramName);
+                //只支持String 以及基础类型char,int,short,byte,double,long,float,boolean,及它们的包装类型
+                if(null==requestValue){
+                    //将请求里的参数值转成适配于参数类型的空值
+                    value= ConverterUtil.primitiveNull(type);
+                }else{
+                    value=ConverterUtil.convert(type,requestValue);
+                }
             }
             methodParams.add(value);
         }
