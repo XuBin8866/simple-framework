@@ -7,6 +7,7 @@ import com.xxbb.framework.simplespring.aop.aspect.DefaultAspect;
 import com.xxbb.framework.simplespring.util.LogUtil;
 import org.slf4j.Logger;
 
+
 import java.lang.reflect.Method;
 
 /**
@@ -16,20 +17,20 @@ import java.lang.reflect.Method;
 @Order(0)
 public class ControllerTimeCalculatorAspect extends DefaultAspect {
     private long timestampCache;
-    private final Logger logger= LogUtil.getLogger();
+    private final Logger logger = LogUtil.getLogger();
+
     @Override
     public void before(Class<?> targetClass, Method method, Object[] args) throws Throwable {
-        logger.info("开始计时，当前执行类是[{}],执行方法是[{}}，参数是[{}]",
-                targetClass.getSimpleName(),method.getName(),args);
-        timestampCache=System.currentTimeMillis();
+        logger.info("开始计时，当前执行类是[{}],执行方法是[{}}，参数是[{}]", targetClass.getSimpleName(), method.getName(), args);
+        timestampCache = System.currentTimeMillis();
     }
 
     @Override
     public Object afterReturning(Class<?> targetClass, Method method, Object[] args, Object returnValue) throws Throwable {
-        long endTime=System.currentTimeMillis();
-        long costTime=System.currentTimeMillis()-timestampCache;
+        long endTime = System.currentTimeMillis();
+        long costTime = System.currentTimeMillis() - timestampCache;
         logger.info("结束计时当前执行类是[{}],执行方法是[{}]，参数是[{}],总耗时：{}",
-                targetClass.getSimpleName(),method.getName(),args,costTime);
+                targetClass.getSimpleName(), method.getName(), args, costTime);
         return returnValue;
     }
 

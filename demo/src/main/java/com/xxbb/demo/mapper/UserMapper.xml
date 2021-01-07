@@ -17,4 +17,7 @@
     <delete id="deleteUser">
         delete from t_user where id=#{id}
     </delete>
+    <select id="get" resultType="com.xxbb.demo.domain.Time">
+        select * from t_time where id=#{id}
+    </select>
 </mapper>

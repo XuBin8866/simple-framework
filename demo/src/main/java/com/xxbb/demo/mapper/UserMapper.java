@@ -2,6 +2,7 @@
 package com.xxbb.demo.mapper;
 
 
+import com.xxbb.demo.domain.Time;
 import com.xxbb.demo.domain.User;
 
 import java.util.List;
@@ -57,4 +58,11 @@ public interface UserMapper {
      * @return 受影响的行数
      */
     int deleteUser(Integer id);
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    Time get(Integer id);
 }

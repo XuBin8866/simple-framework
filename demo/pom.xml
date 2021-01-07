@@ -28,6 +28,39 @@
       <version>4.13</version>
       <scope>test</scope>
     </dependency>
+    <!--easy poi-->
+    <dependency>
+      <groupId>cn.afterturn</groupId>
+      <artifactId>easypoi-base</artifactId>
+      <version>3.2.0</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>cn.afterturn</groupId>
+      <artifactId>easypoi-web</artifactId>
+      <version>3.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>cn.afterturn</groupId>
+      <artifactId>easypoi-annotation</artifactId>
+      <version>3.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>4.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>jstl</artifactId>
+      <version>1.2</version>
+    </dependency>
   </dependencies>
 
   <build>

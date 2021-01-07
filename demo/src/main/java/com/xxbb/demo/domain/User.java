@@ -1,24 +1,30 @@
 package com.xxbb.demo.domain;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
+
+import java.io.Serializable;
+
 /**
  * User.java
  *
  * @author PLF
  * @date 2019年3月6日
  */
-public class User {
+public class User implements Serializable {
     /**
      * the id
      */
+    @Excel(name="ID")
     private Integer id;
 
     /**
      * the name
      */
+    @Excel(name="用户名")
     private String username;
-
+    @Excel(name="密码")
     private String password;
-
+    @Excel(name="状态",replace = "正常_1,冻结_2")
     private Integer ifFreeze;
 
     public User() {

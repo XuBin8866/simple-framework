@@ -1,6 +1,9 @@
 package com.xxbb.demo;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.xxbb.demo.circular.C;
+import com.xxbb.demo.domain.Time;
 import com.xxbb.demo.mapper.UserMapper;
 import com.xxbb.demo.domain.User;
 import com.xxbb.demo.circular.A;
@@ -17,11 +20,28 @@ import com.xxbb.framework.simplespring.util.LogUtil;
 import org.junit.Test;
 import org.slf4j.Logger;
 
+import java.sql.Timestamp;
+import java.util.Date;
+
 /**
  * @author xxbb
  */
 
 public class TestMain {
+
+    @Test
+    public void test(){
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
+        SqlSession session = factory.openSession();
+        UserMapper mapper=session.getMapper(UserMapper.class);
+        Time t=new Time();
+        t.setTime(new Timestamp(new Date().getTime()));
+//        session.insert(t);
+//        session.commit();
+//        session.close();
+        Time time = mapper.get(3);
+        System.out.println(new Gson().toJson(time));
+    }
     /**
      * IoC和DI需要组合使用，如果使用了AOP需要在DI前进行织入,
      * 同时得益于IoC和DI的操作是串行进行的，不会出现循环依赖的情况

@@ -1,8 +1,14 @@
 package com.xxbb.demo.controller;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
+
 import com.xxbb.demo.domain.Account;
 import com.xxbb.demo.domain.User;
+import com.xxbb.demo.mapper.UserMapper;
 import com.xxbb.demo.service.HelloService;
+import com.xxbb.framework.simplemybatis.session.SqlSession;
+import com.xxbb.framework.simplemybatis.session.SqlSessionFactory;
 import com.xxbb.framework.simplespring.core.annotation.Controller;
 import com.xxbb.framework.simplespring.inject.annotation.Autowired;
 import com.xxbb.framework.simplespring.mvc.annotation.RequestMapping;
@@ -10,8 +16,11 @@ import com.xxbb.framework.simplespring.mvc.annotation.RequestParam;
 import com.xxbb.framework.simplespring.mvc.annotation.ResponseBody;
 import com.xxbb.framework.simplespring.mvc.type.ModelAndView;
 import com.xxbb.framework.simplespring.mvc.type.RequestMethod;
+import org.apache.poi.ss.usermodel.Workbook;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,6 +33,24 @@ public class HelloController {
     HelloService helloService;
     @Autowired
     Account account;
+
+    @Autowired
+    SqlSessionFactory sqlSessionFactory;
+
+
+    @RequestMapping(value="/export",method = RequestMethod.GET)
+    @ResponseBody
+    public Object exportUser(@RequestParam("response") HttpServletResponse response){
+        System.out.println(response);
+        SqlSession sqlSession = sqlSessionFactory.openSession();
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+        List<User> list = mapper.getAll();
+        System.out.println(list.toString());
+        Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("用户表","用户"),
+                User .class, list);
+        return list;
+    }
+
     @RequestMapping("/")
     public String index(){
         return "index.jsp";
@@ -61,4 +88,6 @@ public class HelloController {
                 addViewData("user",user);
         return mv;
     }
+
+
 }
