@@ -15,6 +15,6 @@ public class HelloService {
     UserDao userDao;
     public void hello(){
         System.out.println("hello! This is service");
-        userDao.select();
+        System.out.println(userDao.getAll());
     }
 }
