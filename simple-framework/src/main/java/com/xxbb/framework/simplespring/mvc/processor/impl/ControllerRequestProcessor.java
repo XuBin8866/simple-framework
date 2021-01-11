@@ -99,7 +99,7 @@ public class ControllerRequestProcessor implements RequestProcessor {
                     //3.解析方法里被@RequestParam标记的参数
                     //  获取该注解的属性值，作为参数名
                     //  获取被标记参数的数据类型，建立参数名到参数类型的映射
-                    // 这里需要使用LinkedHashMap，否则由于map内部的自动排序使得我们的参数顺序和方法中的顺序不同
+                    // 这里需要使用LinkedHashMap保证参数的顺序，否则由于map内部的自动排序使得我们的参数顺序和方法中的顺序不同
                     Map<String,Class<?>> methodParamMap=new LinkedHashMap<>(10);
                     Parameter[] parameters=method.getParameters();
                     if(!ValidationUtil.isEmpty(parameters)){

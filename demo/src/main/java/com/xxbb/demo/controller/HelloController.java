@@ -19,7 +19,9 @@ import com.xxbb.framework.simplespring.mvc.type.ModelAndView;
 import com.xxbb.framework.simplespring.mvc.type.RequestMethod;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,18 +42,22 @@ public class HelloController {
 
     @Autowired
     UserDao userDao;
-
+    //没有对应void的的结果处理器，直接使用response会和
     @RequestMapping(value="/export",method = RequestMethod.GET)
-    @ResponseBody
-    public Object exportUser(@RequestParam("response") HttpServletResponse response){
+    public void exportUser(@RequestParam("response") HttpServletResponse response) throws IOException {
         System.out.println(response);
+        response.setHeader("content-Type", "application/vnd.ms-excel");
+        // 下载文件的默认名称(设置下载文件的默认名称)
+        response.setHeader("Content-Disposition", "attachment;filename="+
+                new String("测试样例".getBytes("gb2312"), "iso8859-1")+".xls");
+
         SqlSession sqlSession = sqlSessionFactory.openSession();
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
-        List<User> list = userDao.getAll();
+        List<User> list = mapper.getAll();
         System.out.println(list.toString());
         Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("用户表","用户"),
                 User .class, list);
-        return list;
+        workbook.write(response.getOutputStream());
     }
 
     @RequestMapping("/")
@@ -91,6 +97,15 @@ public class HelloController {
                 addViewData("user",user);
         return mv;
     }
-
+    @RequestMapping(value = "/param",method = RequestMethod.GET)
+    public String getHttpServletObject(@RequestParam("map")  Map<String,String[]> requestParamMap,
+                                       @RequestParam("request") HttpServletRequest request,
+                                       @RequestParam("response") HttpServletResponse response)
+    {
+        System.out.println("requestParamMap:"+requestParamMap);
+        System.out.println("request:"+request);
+        System.out.println("response:"+request);
+        return "success";
+    }
 
 }
