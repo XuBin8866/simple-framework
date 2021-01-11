@@ -360,7 +360,19 @@ public interface UserMapper {
 
 ###### Web功能
 
-配置<code>web.xml</code>,使用该框架的 MVC 功能需要指定该框架的 DispatcherServlet 对请求进行拦截，之后的使用方式和Spring框架的使用方式类似。
+配置<code>web.xml</code>,使用该框架的 MVC 功能需要指定该框架的 DispatcherServlet 对请求进行拦截，之后的使用方式和Spring框架的使用方式类似。请求和相应对象在Controller通过方法参数获取，用例如下：
+```java
+public String getHttpServletObject(@RequestParam("map")  Map<String,String[]> requestParamMap,
+                                       @RequestParam("request") HttpServletRequest request,
+                                       @RequestParam("response") HttpServletResponse response)
+    {
+        System.out.println("requestParamMap:"+requestParamMap);
+        System.out.println("request:"+request);
+        System.out.println("response:"+request);
+        return "success";
+    }
+```
+关于Controller层编写的用例请参考项目内demo的[>>HelloController](https://github.com/XuBin8866/simple-framework/blob/master/demo/src/main/java/com/xxbb/demo/controller/HelloController.java)
 
 项目具体的功能和业务逻辑介绍参考[>> 自实现简易SSM框架](https://github.com/XuBin8866/my-docs/blob/main/simple-framework-docs/%E8%87%AA%E5%AE%9E%E7%8E%B0%E7%AE%80%E6%98%93SSM%E6%A1%86%E6%9E%B6.md)、[>> 自实现简易MyBatis框架](https://github.com/XuBin8866/my-docs/blob/main/simple-framework-docs/%E8%87%AA%E5%AE%9E%E7%8E%B0%E7%AE%80%E6%98%93MyBatis%E6%A1%86%E6%9E%B6.md)
 
