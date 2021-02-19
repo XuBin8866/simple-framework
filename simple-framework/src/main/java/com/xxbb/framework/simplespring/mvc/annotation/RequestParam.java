@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequestParam {
     /**
-     * q请求参数
+     * 请求参数
      * @return 参数值
      */
     String value() default "";
