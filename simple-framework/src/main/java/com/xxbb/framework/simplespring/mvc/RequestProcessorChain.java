@@ -102,7 +102,6 @@ public class RequestProcessorChain {
             this.resultRender.render(this);
         } catch (Exception e) {
             log.error("doRender error:",e);
-            throw new RuntimeException(e);
         }
     }
 

@@ -1,13 +1,12 @@
 package com.xxbb.demo;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.xxbb.demo.circular.C;
-import com.xxbb.demo.domain.Time;
-import com.xxbb.demo.mapper.UserMapper;
-import com.xxbb.demo.domain.User;
 import com.xxbb.demo.circular.A;
 import com.xxbb.demo.circular.B;
+import com.xxbb.demo.circular.C;
+import com.xxbb.demo.domain.Time;
+import com.xxbb.demo.domain.User;
+import com.xxbb.demo.mapper.UserMapper;
 import com.xxbb.demo.service.HelloService;
 import com.xxbb.demo.service.UserService;
 import com.xxbb.framework.simplemybatis.session.SqlSession;
@@ -197,5 +196,30 @@ public class TestMain {
         } finally {
             session.close();
         }
+    }
+    @Test
+    public void currentInsertTest(){
+        //构建sql工厂
+        SqlSessionFactory factory = new SqlSessionFactoryBuilder().build("application.properties");
+        SqlSession session = factory.openSession();
+        try {
+            UserMapper userMapper = session.getMapper(UserMapper.class);
+            System.out.println("testMain.insert:" + userMapper.insertUser(24, "zzxx", "123456", 1));
+            System.out.println("testMain.insert:" + userMapper.insertUser(25, "zzxx", "123456", 1));
+            session.commit();
+        } catch (Exception e) {
+            LogUtil.getLogger().error("sql test error:", e);
+        } finally {
+            session.close();
+        }
+    }
+    
+    /**
+     * 测试null能否进行类型判断
+     * 结论：可以
+     */
+    @Test
+    public void nullInstanceTest(){
+        boolean flag= null instanceof User;
     }
 }

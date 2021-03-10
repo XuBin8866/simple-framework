@@ -2,18 +2,15 @@ package com.xxbb.framework.simplespring.mvc.render.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
-import com.google.gson.Gson;
-import com.xxbb.framework.simplemybatis.session.SqlSession;
 import com.xxbb.framework.simplespring.mvc.RequestProcessorChain;
 import com.xxbb.framework.simplespring.mvc.render.ResultRender;
+import com.xxbb.framework.simplespring.util.LogUtil;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.slf4j.Logger;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,7 +18,14 @@ import java.util.List;
  * @date 2021/1/11 11:58
  */
 public class ExcelResultRender implements ResultRender {
+	/**
+	 * 传入数据
+	 */
 	private Object excelData;
+	/**
+	 * 日志
+	 */
+	private final Logger log = LogUtil.getLogger();
 	
 	public ExcelResultRender(Object excelData) {
 		this.excelData = excelData;
@@ -31,20 +35,30 @@ public class ExcelResultRender implements ResultRender {
 	public void render(RequestProcessorChain requestProcessorChain) throws Exception {
 		HttpServletResponse response = requestProcessorChain.getResp();
 		List<?> list;
-		if (excelData instanceof List<?>) {
-			list = (List<?>) excelData;
+		
+		if (excelData == null) {
+			log.info("export data is null");
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"导出数据表格失败！");
+			return;
+		} else if (excelData instanceof List<?>) {
+			log.info("export data type:list");
+			list=(List<?>)excelData;
+			if(list.isEmpty()){
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"导出数据表格失败！");
+				return;
+			}
 		} else {
+			log.info("export data type:object");
 			list = Collections.singletonList(excelData);
 		}
 		Object object = list.get(0);
-		String clazzName = object.getClass().getSimpleName();
+		String name = object.getClass().getSimpleName()+ "-" + System.currentTimeMillis();
 		//设置响应头
-		response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
 		response.setHeader("content-Type", "application/vnd.ms-excel");
 		response.setHeader("Content-Disposition", "attachment;filename=" +
-				new String((clazzName+System.currentTimeMillis()).getBytes("gb2312"), "iso8859-1") + ".xls");
+				new String(name.getBytes(StandardCharsets.UTF_8), "iso8859-1") + ".xls");
 		Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("数据表头", "data"),
-				list.get(0).getClass(), list);
+				object.getClass(), list);
 		workbook.write(response.getOutputStream());
 	}
 }

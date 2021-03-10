@@ -1,14 +1,10 @@
 package com.xxbb.demo.controller;
 
-import cn.afterturn.easypoi.excel.ExcelExportUtil;
-import cn.afterturn.easypoi.excel.entity.ExportParams;
-
 import com.xxbb.demo.dao.UserDao;
 import com.xxbb.demo.domain.Account;
 import com.xxbb.demo.domain.User;
-import com.xxbb.demo.mapper.UserMapper;
+import com.xxbb.demo.domain.UserExcelCoreModel;
 import com.xxbb.demo.service.HelloService;
-import com.xxbb.framework.simplemybatis.session.SqlSession;
 import com.xxbb.framework.simplemybatis.session.SqlSessionFactory;
 import com.xxbb.framework.simplespring.core.annotation.Controller;
 import com.xxbb.framework.simplespring.inject.annotation.Autowired;
@@ -18,11 +14,9 @@ import com.xxbb.framework.simplespring.mvc.annotation.ResponseBody;
 import com.xxbb.framework.simplespring.mvc.annotation.ResponseExcel;
 import com.xxbb.framework.simplespring.mvc.type.ModelAndView;
 import com.xxbb.framework.simplespring.mvc.type.RequestMethod;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,9 +41,14 @@ public class HelloController {
 	UserDao userDao;
 	
 	@ResponseExcel
-	@RequestMapping(value = "/export", method = RequestMethod.GET)
-	public List<Account> exportUser() {
+	@RequestMapping(value = "/exportNull", method = RequestMethod.GET)
+	public List<Account> exportNull() {
 		return new ArrayList<>();
+	}
+	@ResponseExcel
+	@RequestMapping(value="/exportUser",method = RequestMethod.GET)
+	public List<UserExcelCoreModel> exportUsers(){
+		return userDao.getUserExcelCoreModels();
 	}
 	
 	@RequestMapping("/")

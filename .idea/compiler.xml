@@ -6,9 +6,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="simple-framework (1)" />
+        <module name="simple-framework" />
         <module name="demo" />
         <module name="web" />
-        <module name="simple-framework (1)" />
       </profile>
     </annotationProcessing>
   </component>
