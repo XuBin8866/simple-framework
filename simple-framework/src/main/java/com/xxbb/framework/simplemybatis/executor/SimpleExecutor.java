@@ -79,6 +79,8 @@ public class SimpleExecutor implements Executor {
         } catch (Exception e) {
             LOGGER.error(e.getLocalizedMessage());
             throw new RuntimeException(e);
+        }finally {
+            dataSource.returnConnection(connection);
         }
     }
 
