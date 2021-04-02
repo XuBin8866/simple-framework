@@ -57,7 +57,7 @@ public class ExcelResultRender implements ResultRender {
 		response.setHeader("content-Type", "application/vnd.ms-excel");
 		response.setHeader("Content-Disposition", "attachment;filename=" +
 				new String(name.getBytes(StandardCharsets.UTF_8), "iso8859-1") + ".xls");
-		Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("数据表头", "data"),
+		Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("name", "data"),
 				object.getClass(), list);
 		workbook.write(response.getOutputStream());
 	}
