@@ -13,6 +13,7 @@ import com.xxbb.framework.simplemybatis.utils.LogUtils;
 import com.xxbb.framework.simplemybatis.utils.ReflectUtils;
 import com.xxbb.framework.simplemybatis.utils.StringUtils;
 import org.slf4j.Logger;
+import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -50,9 +51,12 @@ public class DefaultSqlSession implements SqlSession {
     @Override
     public <T> T selectOne(String statement, Object parameter) {
         List<T> results = this.selectList(statement, parameter);
-        if (results.size() == 1) {
+        if(CollectionUtils.isEmpty(results)){
+            return null;
+        }else if(results.size()==1){
             return results.get(0);
-        } else {
+        }else{
+            //当方法的返回值为一个对象类，但是查询语句却查询出了多条结果
             throw new RuntimeException("查询结果出错：查询出多条数据，结果集长度：" + results.size());
         }
     }
